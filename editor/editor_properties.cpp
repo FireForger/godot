@@ -2947,6 +2947,44 @@ void EditorPropertyRID::update_property() {
 
 EditorPropertyRID::EditorPropertyRID() {
 	label = memnew(Label);
+	label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	label->set_clip_text(true);
+	add_child(label);
+}
+
+///////////////////// CALLABLE /////////////////////////
+
+void EditorPropertyCallable::update_property() {
+	Callable callable = get_edited_object()->get(get_edited_property());
+	if (callable.is_valid()) {
+		label->set_text("Callable: " + String(callable.get_method()));
+	} else {
+		label->set_text(TTR("Invalid Callable"));
+	}
+}
+
+EditorPropertyCallable::EditorPropertyCallable() {
+	label = memnew(Label);
+	label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	label->set_clip_text(true);
+	add_child(label);
+}
+
+///////////////////// SIGNAL /////////////////////////
+
+void EditorPropertySignal::update_property() {
+	Signal signal = get_edited_object()->get(get_edited_property());
+	if (!signal.is_null()) {
+		label->set_text("Signal: " + String(signal.get_name()));
+	} else {
+		label->set_text(TTR("Invalid Signal"));
+	}
+}
+
+EditorPropertySignal::EditorPropertySignal() {
+	label = memnew(Label);
+	label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	label->set_clip_text(true);
 	add_child(label);
 }
 
@@ -3384,7 +3422,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 	double default_float_step = EDITOR_GET("interface/inspector/default_float_step");
 
 	switch (p_type) {
-		// atomic types
+		// Atomic types.
 		case Variant::NIL: {
 			EditorPropertyNil *editor = memnew(EditorPropertyNil);
 			return editor;
@@ -3556,8 +3594,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			}
 		} break;
 
-			// math types
-
+		// Math types.
 		case Variant::VECTOR2: {
 			EditorPropertyVector2 *editor = memnew(EditorPropertyVector2(p_wide));
 
@@ -3638,7 +3675,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 
 		} break;
 
-		// misc types
+		// Misc types.
 		case Variant::COLOR: {
 			EditorPropertyColor *editor = memnew(EditorPropertyColor);
 			editor->setup(p_hint != PROPERTY_HINT_COLOR_NO_ALPHA);
@@ -3674,6 +3711,14 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::RID: {
 			EditorPropertyRID *editor = memnew(EditorPropertyRID);
+			return editor;
+		} break;
+		case Variant::CALLABLE: {
+			EditorPropertyCallable *editor = memnew(EditorPropertyCallable);
+			return editor;
+		} break;
+		case Variant::SIGNAL: {
+			EditorPropertySignal *editor = memnew(EditorPropertySignal);
 			return editor;
 		} break;
 		case Variant::OBJECT: {

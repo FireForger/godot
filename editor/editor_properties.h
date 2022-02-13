@@ -712,6 +712,24 @@ public:
 	EditorPropertyRID();
 };
 
+class EditorPropertyCallable : public EditorProperty {
+	GDCLASS(EditorPropertyCallable, EditorProperty);
+	Label *label;
+
+public:
+	virtual void update_property() override;
+	EditorPropertyCallable();
+};
+
+class EditorPropertySignal : public EditorProperty {
+	GDCLASS(EditorPropertySignal, EditorProperty);
+	Label *label;
+
+public:
+	virtual void update_property() override;
+	EditorPropertySignal();
+};
+
 class EditorPropertyResource : public EditorProperty {
 	GDCLASS(EditorPropertyResource, EditorProperty);
 

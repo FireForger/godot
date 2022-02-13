@@ -888,8 +888,23 @@ void EditorPropertyDictionary::update_property() {
 				value = object->get_new_item_value();
 			}
 
-			EditorProperty *prop = nullptr;
+			if (i == amount) {
+				PanelContainer *pc = memnew(PanelContainer);
+				property_vbox->add_child(pc);
+				pc->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("DictionaryAddItem"), SNAME("EditorStyles")));
 
+				add_vbox = memnew(VBoxContainer);
+				pc->add_child(add_vbox);
+			}
+
+			HBoxContainer *hbox = memnew(HBoxContainer);
+			if (add_vbox) {
+				add_vbox->add_child(hbox);
+			} else {
+				property_vbox->add_child(hbox);
+			}
+
+			EditorProperty *prop = nullptr;
 			switch (value.get_type()) {
 				case Variant::NIL: {
 					prop = memnew(EditorPropertyNil);
@@ -1010,6 +1025,14 @@ void EditorPropertyDictionary::update_property() {
 					prop = memnew(EditorPropertyRID);
 
 				} break;
+				case Variant::CALLABLE: {
+					prop = memnew(EditorPropertyCallable);
+
+				} break;
+				case Variant::SIGNAL: {
+					prop = memnew(EditorPropertySignal);
+
+				} break;
 				case Variant::OBJECT: {
 					if (Object::cast_to<EncodedObjectAsID>(value)) {
 						EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
@@ -1083,48 +1106,47 @@ void EditorPropertyDictionary::update_property() {
 				}
 			}
 
-			if (i == amount) {
-				PanelContainer *pc = memnew(PanelContainer);
-				property_vbox->add_child(pc);
-				pc->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("DictionaryAddItem"), SNAME("EditorStyles")));
+			if (prop) {
+				prop->set_object_and_property(object.ptr(), prop_name);
 
-				add_vbox = memnew(VBoxContainer);
-				pc->add_child(add_vbox);
+				if (i < amount) {
+					String cs = key.get_construct_string();
+					prop->set_label(key.get_construct_string());
+					prop->set_tooltip(cs);
+				} else if (i == amount) {
+					prop->set_label(TTR("New Key:"));
+				} else if (i == amount + 1) {
+					prop->set_label(TTR("New Value:"));
+				}
+
+				prop->set_selectable(false);
+				prop->connect("property_changed", callable_mp(this, &EditorPropertyDictionary::_property_changed));
+				prop->connect("object_id_selected", callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
+
+				hbox->add_child(prop);
+				prop->set_h_size_flags(SIZE_EXPAND_FILL);
+				prop->update_property();
+			} else {
+				Label *label = memnew(Label);
+				label->set_h_size_flags(SIZE_EXPAND_FILL);
+				label->set_clip_text(true);
+				label->set_text(TTR("No editor for type ") + Variant::get_type_name(value.get_type()));
+				hbox->add_child(label);
 			}
-			prop->set_object_and_property(object.ptr(), prop_name);
-			int change_index = 0;
 
+			int change_index = 0;
 			if (i < amount) {
-				String cs = key.get_construct_string();
-				prop->set_label(key.get_construct_string());
-				prop->set_tooltip(cs);
 				change_index = i + offset;
 			} else if (i == amount) {
-				prop->set_label(TTR("New Key:"));
 				change_index = -1;
 			} else if (i == amount + 1) {
-				prop->set_label(TTR("New Value:"));
 				change_index = -2;
 			}
 
-			prop->set_selectable(false);
-			prop->connect("property_changed", callable_mp(this, &EditorPropertyDictionary::_property_changed));
-			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
-
-			HBoxContainer *hbox = memnew(HBoxContainer);
-			if (add_vbox) {
-				add_vbox->add_child(hbox);
-			} else {
-				property_vbox->add_child(hbox);
-			}
-			hbox->add_child(prop);
-			prop->set_h_size_flags(SIZE_EXPAND_FILL);
 			Button *edit = memnew(Button);
 			edit->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 			hbox->add_child(edit);
 			edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_change_type), varray(edit, change_index));
-
-			prop->update_property();
 
 			if (i == amount + 1) {
 				button_add_item = memnew(Button);
@@ -1136,7 +1158,6 @@ void EditorPropertyDictionary::update_property() {
 		}
 
 		updating = false;
-
 	} else {
 		if (vbox) {
 			set_bottom_editor(nullptr);
