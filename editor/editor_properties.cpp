@@ -1262,12 +1262,13 @@ void EditorPropertyInteger::update_property() {
 void EditorPropertyInteger::_bind_methods() {
 }
 
-void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser) {
+void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser, const String &p_suffix) {
 	spin->set_min(p_min);
 	spin->set_max(p_max);
 	spin->set_step(p_step);
 	spin->set_allow_greater(p_allow_greater);
 	spin->set_allow_lesser(p_allow_lesser);
+	spin->set_suffix(p_suffix);
 }
 
 EditorPropertyInteger::EditorPropertyInteger() {
@@ -3368,6 +3369,8 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 				hint.suffix = " " + slice.replace_first("suffix:", "").strip_edges();
 			}
 		}
+	} else if (p_hint == PROPERTY_HINT_SUFFIX) {
+		hint.suffix = " " + p_hint_text.strip_edges();
 	}
 
 	if ((hint.radians || degrees) && hint.suffix.is_empty()) {
@@ -3384,7 +3387,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 	double default_float_step = EDITOR_GET("interface/inspector/default_float_step");
 
 	switch (p_type) {
-		// atomic types
+		// Atomic types.
 		case Variant::NIL: {
 			EditorPropertyNil *editor = memnew(EditorPropertyNil);
 			return editor;
@@ -3447,7 +3450,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-				editor->setup(hint.min, hint.max, hint.step, hint.greater, hint.lesser);
+				editor->setup(hint.min, hint.max, hint.step, hint.greater, hint.lesser, hint.suffix);
 
 				return editor;
 			}
@@ -3556,8 +3559,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			}
 		} break;
 
-			// math types
-
+		// Math types.
 		case Variant::VECTOR2: {
 			EditorPropertyVector2 *editor = memnew(EditorPropertyVector2(p_wide));
 
@@ -3638,7 +3640,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 
 		} break;
 
-		// misc types
+		// Misc types.
 		case Variant::COLOR: {
 			EditorPropertyColor *editor = memnew(EditorPropertyColor);
 			editor->setup(p_hint != PROPERTY_HINT_COLOR_NO_ALPHA);

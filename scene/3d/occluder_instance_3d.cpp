@@ -218,7 +218,7 @@ void QuadOccluder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &QuadOccluder3D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &QuadOccluder3D::get_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_SUFFIX, "m"), "set_size", "get_size");
 }
 
 QuadOccluder3D::QuadOccluder3D() {
@@ -285,7 +285,7 @@ void BoxOccluder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &BoxOccluder3D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &BoxOccluder3D::get_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_SUFFIX, "m"), "set_size", "get_size");
 }
 
 BoxOccluder3D::BoxOccluder3D() {
@@ -354,7 +354,7 @@ void SphereOccluder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &SphereOccluder3D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &SphereOccluder3D::get_radius);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_SUFFIX, "m"), "set_radius", "get_radius");
 }
 
 SphereOccluder3D::SphereOccluder3D() {

@@ -41,7 +41,7 @@ void NavigationObstacle3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_radius"), &NavigationObstacle3D::get_radius);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "estimate_radius"), "set_estimate_radius", "is_radius_estimated");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,100,0.01"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,100,0.01,suffix:m"), "set_radius", "get_radius");
 }
 
 void NavigationObstacle3D::_validate_property(PropertyInfo &p_property) const {

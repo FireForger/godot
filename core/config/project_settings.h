@@ -199,6 +199,13 @@ Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restar
 #define GLOBAL_DEF_RST_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true)
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
 
+#define _GLOBAL_DEF_SET_PROPERTY_INFO(m_property_info) ProjectSettings::get_singleton()->set_custom_property_info(m_property_info.name, m_property_info);
+
+#define GLOBAL_DEF_PROPERTY_INFO(m_property_info, m_value) _GLOBAL_DEF(m_property_info.name, m_value) _GLOBAL_DEF_SET_PROPERTY_INFO(m_property_info)
+#define GLOBAL_DEF_PROPERTY_INFO_RST(m_property_info, m_value) _GLOBAL_DEF(m_property_info.name, m_value, true) _GLOBAL_DEF_PROPERTY_INFO(m_property_info)
+
+#define GLOBAL_DEF_PROPERTY_INFO_BASIC(m_property_info, m_value) _GLOBAL_DEF(m_property_info.name, m_value, false, false, true) _GLOBAL_DEF_SET_PROPERTY_INFO(m_property_info)
+
 #define GLOBAL_DEF_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, false, true)
 #define GLOBAL_DEF_RST_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, false, true)
 #define GLOBAL_DEF_NOVAL_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true, true)
