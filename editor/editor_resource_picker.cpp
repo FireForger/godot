@@ -874,6 +874,7 @@ EditorResourcePicker::EditorResourcePicker() {
 	assign_button->set_flat(true);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign_button->set_clip_text(true);
+	assign_button->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	assign_button->set_drag_forwarding(this);
 	add_child(assign_button);
 	assign_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_resource_selected));

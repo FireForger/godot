@@ -209,46 +209,8 @@ void EditorPropertyArray::_object_id_selected(const StringName &p_property, Obje
 void EditorPropertyArray::update_property() {
 	Variant array = get_edited_object()->get(get_edited_property());
 
-	String arrtype = "";
-	switch (array_type) {
-		case Variant::ARRAY: {
-			arrtype = "Array";
-		} break;
-
-		// Arrays.
-		case Variant::PACKED_BYTE_ARRAY: {
-			arrtype = "PackedByteArray";
-		} break;
-		case Variant::PACKED_INT32_ARRAY: {
-			arrtype = "PackedInt32Array";
-		} break;
-		case Variant::PACKED_FLOAT32_ARRAY: {
-			arrtype = "PackedFloat32Array";
-		} break;
-		case Variant::PACKED_INT64_ARRAY: {
-			arrtype = "PackedInt64Array";
-		} break;
-		case Variant::PACKED_FLOAT64_ARRAY: {
-			arrtype = "PackedFloat64Array";
-		} break;
-		case Variant::PACKED_STRING_ARRAY: {
-			arrtype = "PackedStringArray";
-		} break;
-		case Variant::PACKED_VECTOR2_ARRAY: {
-			arrtype = "PackedVector2Array";
-		} break;
-		case Variant::PACKED_VECTOR3_ARRAY: {
-			arrtype = "PackedVector3Array";
-		} break;
-		case Variant::PACKED_COLOR_ARRAY: {
-			arrtype = "PackedColorArray";
-		} break;
-		default: {
-		}
-	}
-
 	if (array.get_type() == Variant::NIL) {
-		edit->set_text(String("(Nil) ") + arrtype);
+		size_label->set_text("Nil");
 		edit->set_pressed(false);
 		if (vbox) {
 			set_bottom_editor(nullptr);
@@ -263,7 +225,7 @@ void EditorPropertyArray::update_property() {
 	page_index = MIN(page_index, max_page);
 	int offset = page_index * page_length;
 
-	edit->set_text(arrtype + " (size " + itos(size) + ")");
+	size_label->set_text(TTR("Size ") + itos(size));
 
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
 	if (edit->is_pressed() != unfolded) {
@@ -518,6 +480,17 @@ void EditorPropertyArray::_notification(int p_what) {
 			if (Object::cast_to<Button>(button_add_item)) {
 				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			}
+
+			// Update icon.
+			if (array_type == Variant::ARRAY) {
+				if (subtype == Variant::NIL) {
+					icon->hide();
+				} else {
+					icon->set_texture(get_theme_icon(Variant::get_type_name(subtype), SNAME("EditorIcons")));
+				}
+			} else {
+				icon->set_texture(get_theme_icon(Variant::get_type_name(array_type), SNAME("EditorIcons")));
+			}
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -619,6 +592,13 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 
 			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1, p_hint_string.size() - hint_subtype_separator - 1);
 			subtype = Variant::Type(subtype_string.to_int());
+
+			// Setup type name label.
+			String array_type_name = Variant::get_type_name(array_type);
+			if (array_type == Variant::ARRAY && subtype != Variant::NIL) {
+				array_type_name += "[" + Variant::get_type_name(subtype) + "]";
+			}
+			type_label->set_text(array_type_name);
 		}
 	}
 }
@@ -701,13 +681,34 @@ EditorPropertyArray::EditorPropertyArray() {
 
 	edit = memnew(Button);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	edit->set_clip_text(true);
 	edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_edit_pressed));
 	edit->set_toggle_mode(true);
 	edit->set_drag_forwarding(this);
 	edit->connect("draw", callable_mp(this, &EditorPropertyArray::_button_draw));
 	add_child(edit);
 	add_focusable(edit);
+
+	MarginContainer *container = memnew(MarginContainer);
+	container->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	container->add_theme_constant_override(SNAME("margin_left"), 4 * EDSCALE);
+	container->add_theme_constant_override(SNAME("margin_right"), 4 * EDSCALE);
+	edit->add_child(container);
+
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	container->add_child(hbox);
+
+	icon = memnew(TextureRect);
+	icon->set_v_size_flags(SIZE_SHRINK_CENTER);
+	hbox->add_child(icon);
+
+	type_label = memnew(Label);
+	type_label->set_clip_text(true);
+	type_label->set_text_overrun_behavior(Label::OVERRUN_TRIM_ELLIPSIS);
+	type_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbox->add_child(type_label);
+
+	size_label = memnew(Label);
+	hbox->add_child(size_label);
 
 	vbox = nullptr;
 	property_vbox = nullptr;
@@ -814,7 +815,7 @@ void EditorPropertyDictionary::update_property() {
 	Variant updated_val = get_edited_object()->get(get_edited_property());
 
 	if (updated_val.get_type() == Variant::NIL) {
-		edit->set_text("Dictionary (Nil)"); // This provides symmetry with the array property.
+		size_label->set_text("Nil"); // This provides symmetry with the array property.
 		edit->set_pressed(false);
 		if (vbox) {
 			set_bottom_editor(nullptr);
@@ -826,7 +827,7 @@ void EditorPropertyDictionary::update_property() {
 
 	Dictionary dict = updated_val;
 
-	edit->set_text("Dictionary (size " + itos(dict.size()) + ")");
+	size_label->set_text("Size " + itos(dict.size()));
 
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
 	if (edit->is_pressed() != unfolded) {
@@ -1201,11 +1202,29 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 
 	edit = memnew(Button);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	edit->set_clip_text(true);
 	edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_edit_pressed));
 	edit->set_toggle_mode(true);
 	add_child(edit);
 	add_focusable(edit);
+
+	MarginContainer *container = memnew(MarginContainer);
+	container->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
+	container->add_theme_constant_override(SNAME("margin_left"), 4 * EDSCALE);
+	container->add_theme_constant_override(SNAME("margin_right"), 4 * EDSCALE);
+	edit->add_child(container);
+
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	container->add_child(hbox);
+
+	Label *type_label = memnew(Label);
+	type_label->set_clip_text(true);
+	//type_label->set_text_overrun_behavior(Label::OVERRUN_TRIM_ELLIPSIS);
+	type_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	type_label->set_text(TTR("Dictionary"));
+	hbox->add_child(type_label);
+
+	size_label = memnew(Label);
+	hbox->add_child(size_label);
 
 	vbox = nullptr;
 	button_add_item = nullptr;

@@ -2961,6 +2961,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign->set_flat(true);
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
+	assign->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	assign->connect("pressed", callable_mp(this, &EditorPropertyNodePath::_node_assign));
 	assign->set_drag_forwarding(this);
 	hbc->add_child(assign);

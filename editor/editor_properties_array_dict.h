@@ -87,6 +87,9 @@ class EditorPropertyArray : public EditorProperty {
 	int page_length = 20;
 	int page_index = 0;
 	int changing_type_index;
+	TextureRect *icon;
+	Label *type_label;
+	Label *size_label;
 	Button *edit;
 	VBoxContainer *vbox;
 	VBoxContainer *property_vbox;
@@ -144,6 +147,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	int page_length = 20;
 	int page_index = 0;
 	int changing_type_index;
+	Label *size_label;
 	Button *edit;
 	VBoxContainer *vbox;
 	VBoxContainer *property_vbox;
