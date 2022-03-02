@@ -36,7 +36,9 @@
 #include "core/os/keyboard.h"
 #include "core/string/print_string.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
+#include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_toaster.h"
@@ -72,166 +74,52 @@ class SnapDialog : public ConfirmationDialog {
 
 	friend class CanvasItemEditor;
 
-	SpinBox *grid_offset_x;
-	SpinBox *grid_offset_y;
-	SpinBox *grid_step_x;
-	SpinBox *grid_step_y;
-	SpinBox *primary_grid_steps;
-	SpinBox *rotation_offset;
-	SpinBox *rotation_step;
-	SpinBox *scale_step;
+	Vector2 grid_offset;
+	Vector2 grid_step;
+	int primary_grid_steps;
+	float rotation_offset;
+	float rotation_step;
+	float scale_step;
+
+	void _get_property_list(List<PropertyInfo> *p_list) const {
+		p_list->push_back(PropertyInfo(Variant::NIL, "Grid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, "grid_offset", PROPERTY_HINT_RANGE, "-16384,16384,1,suffix:px"));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, "grid_step", PROPERTY_HINT_RANGE, "0.01,16384,1,suffix:px"));
+		p_list->push_back(PropertyInfo(Variant::INT, "primary_grid_steps", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:steps"));
+
+		p_list->push_back(PropertyInfo(Variant::NIL, "Rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "rotation_offset", PROPERTY_HINT_RANGE, "-360,360,1,radians"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "rotation_step", PROPERTY_HINT_RANGE, "-360,360,1,radians"));
+
+		p_list->push_back(PropertyInfo(Variant::NIL, "Scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "scale_step", PROPERTY_HINT_RANGE, "0.01,100,0.01,noslider,or_greater"));
+	}
 
 public:
 	SnapDialog() {
-		const int SPIN_BOX_GRID_RANGE = 16384;
-		const int SPIN_BOX_ROTATION_RANGE = 360;
-		const real_t SPIN_BOX_SCALE_MIN = 0.01;
-		const real_t SPIN_BOX_SCALE_MAX = 100;
-
-		Label *label;
-		VBoxContainer *container;
-		GridContainer *child_container;
-
 		set_title(TTR("Configure Snap"));
 
-		container = memnew(VBoxContainer);
-		add_child(container);
-
-		child_container = memnew(GridContainer);
-		child_container->set_columns(3);
-		container->add_child(child_container);
-
-		label = memnew(Label);
-		label->set_text(TTR("Grid Offset:"));
-		child_container->add_child(label);
-		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-
-		grid_offset_x = memnew(SpinBox);
-		grid_offset_x->set_min(-SPIN_BOX_GRID_RANGE);
-		grid_offset_x->set_max(SPIN_BOX_GRID_RANGE);
-		grid_offset_x->set_allow_lesser(true);
-		grid_offset_x->set_allow_greater(true);
-		grid_offset_x->set_suffix("px");
-		grid_offset_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		child_container->add_child(grid_offset_x);
-
-		grid_offset_y = memnew(SpinBox);
-		grid_offset_y->set_min(-SPIN_BOX_GRID_RANGE);
-		grid_offset_y->set_max(SPIN_BOX_GRID_RANGE);
-		grid_offset_y->set_allow_lesser(true);
-		grid_offset_y->set_allow_greater(true);
-		grid_offset_y->set_suffix("px");
-		grid_offset_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		child_container->add_child(grid_offset_y);
-
-		label = memnew(Label);
-		label->set_text(TTR("Grid Step:"));
-		child_container->add_child(label);
-		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-
-		grid_step_x = memnew(SpinBox);
-		grid_step_x->set_min(0.01);
-		grid_step_x->set_max(SPIN_BOX_GRID_RANGE);
-		grid_step_x->set_allow_greater(true);
-		grid_step_x->set_suffix("px");
-		grid_step_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		child_container->add_child(grid_step_x);
-
-		grid_step_y = memnew(SpinBox);
-		grid_step_y->set_min(0.01);
-		grid_step_y->set_max(SPIN_BOX_GRID_RANGE);
-		grid_step_y->set_allow_greater(true);
-		grid_step_y->set_suffix("px");
-		grid_step_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		child_container->add_child(grid_step_y);
-
-		child_container = memnew(GridContainer);
-		child_container->set_columns(2);
-		container->add_child(child_container);
-
-		label = memnew(Label);
-		label->set_text(TTR("Primary Line Every:"));
-		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		child_container->add_child(label);
-
-		primary_grid_steps = memnew(SpinBox);
-		primary_grid_steps->set_min(0);
-		primary_grid_steps->set_step(1);
-		primary_grid_steps->set_max(100);
-		primary_grid_steps->set_allow_greater(true);
-		primary_grid_steps->set_suffix(TTR("steps"));
-		primary_grid_steps->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		child_container->add_child(primary_grid_steps);
-
-		container->add_child(memnew(HSeparator));
-
-		// We need to create another GridContainer with the same column count,
-		// so we can put an HSeparator above
-		child_container = memnew(GridContainer);
-		child_container->set_columns(2);
-		container->add_child(child_container);
-
-		label = memnew(Label);
-		label->set_text(TTR("Rotation Offset:"));
-		child_container->add_child(label);
-		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-
-		rotation_offset = memnew(SpinBox);
-		rotation_offset->set_min(-SPIN_BOX_ROTATION_RANGE);
-		rotation_offset->set_max(SPIN_BOX_ROTATION_RANGE);
-		rotation_offset->set_suffix("deg");
-		rotation_offset->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		child_container->add_child(rotation_offset);
-
-		label = memnew(Label);
-		label->set_text(TTR("Rotation Step:"));
-		child_container->add_child(label);
-		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-
-		rotation_step = memnew(SpinBox);
-		rotation_step->set_min(-SPIN_BOX_ROTATION_RANGE);
-		rotation_step->set_max(SPIN_BOX_ROTATION_RANGE);
-		rotation_step->set_suffix("deg");
-		rotation_step->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		child_container->add_child(rotation_step);
-
-		container->add_child(memnew(HSeparator));
-
-		child_container = memnew(GridContainer);
-		child_container->set_columns(2);
-		container->add_child(child_container);
-		label = memnew(Label);
-		label->set_text(TTR("Scale Step:"));
-		child_container->add_child(label);
-		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-
-		scale_step = memnew(SpinBox);
-		scale_step->set_min(SPIN_BOX_SCALE_MIN);
-		scale_step->set_max(SPIN_BOX_SCALE_MAX);
-		scale_step->set_allow_greater(true);
-		scale_step->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		scale_step->set_step(0.01f);
-		child_container->add_child(scale_step);
+		EditorInspector *inspector = memnew(EditorInspector);
+		inspector->edit(this);
+		add_child(inspector);
 	}
 
 	void set_fields(const Point2 p_grid_offset, const Point2 p_grid_step, const int p_primary_grid_steps, const real_t p_rotation_offset, const real_t p_rotation_step, const real_t p_scale_step) {
-		grid_offset_x->set_value(p_grid_offset.x);
-		grid_offset_y->set_value(p_grid_offset.y);
-		grid_step_x->set_value(p_grid_step.x);
-		grid_step_y->set_value(p_grid_step.y);
-		primary_grid_steps->set_value(p_primary_grid_steps);
-		rotation_offset->set_value(Math::rad2deg(p_rotation_offset));
-		rotation_step->set_value(Math::rad2deg(p_rotation_step));
-		scale_step->set_value(p_scale_step);
+		grid_offset = p_grid_offset;
+		grid_step = p_grid_step;
+		primary_grid_steps = p_primary_grid_steps;
+		rotation_offset = p_rotation_offset;
+		rotation_step = p_rotation_step;
+		scale_step = p_scale_step;
 	}
 
 	void get_fields(Point2 &p_grid_offset, Point2 &p_grid_step, int &p_primary_grid_steps, real_t &p_rotation_offset, real_t &p_rotation_step, real_t &p_scale_step) {
-		p_grid_offset = Point2(grid_offset_x->get_value(), grid_offset_y->get_value());
-		p_grid_step = Point2(grid_step_x->get_value(), grid_step_y->get_value());
-		p_primary_grid_steps = int(primary_grid_steps->get_value());
-		p_rotation_offset = Math::deg2rad(rotation_offset->get_value());
-		p_rotation_step = Math::deg2rad(rotation_step->get_value());
-		p_scale_step = scale_step->get_value();
+		p_grid_offset = grid_offset;
+		p_grid_step = grid_step;
+		p_primary_grid_steps = primary_grid_steps;
+		p_rotation_offset = rotation_offset;
+		p_rotation_step = rotation_step;
+		p_scale_step = scale_step;
 	}
 };
 
