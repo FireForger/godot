@@ -38,8 +38,7 @@
 class GradientEdit : public Control {
 	GDCLASS(GradientEdit, Control);
 
-	PopupPanel *popup;
-	ColorPicker *picker;
+	ColorPickerButton *picker_button;
 
 	bool grabbing = false;
 	int grabbed = -1;
@@ -56,10 +55,8 @@ class GradientEdit : public Control {
 	int draw_spacing = BASE_SPACING;
 	int draw_point_width = BASE_POINT_WIDTH;
 
-	void _draw_checker(int x, int y, int w, int h);
 	void _color_changed(const Color &p_color);
 	int _get_point_from_pos(int x);
-	void _show_color_picker();
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;

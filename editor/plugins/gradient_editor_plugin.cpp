@@ -46,9 +46,9 @@ void GradientEditor::_gradient_changed() {
 
 	editing = true;
 	Vector<Gradient::Point> points = gradient->get_points();
-	set_points(points);
-	set_interpolation_mode(gradient->get_interpolation_mode());
-	update();
+	gradient_edit->set_points(points);
+	gradient_edit->set_interpolation_mode(gradient->get_interpolation_mode());
+	gradient_edit->update();
 	editing = false;
 }
 
@@ -56,9 +56,9 @@ void GradientEditor::_ramp_changed() {
 	editing = true;
 	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 	undo_redo->create_action(TTR("Gradient Edited"));
-	undo_redo->add_do_method(gradient.ptr(), "set_offsets", get_offsets());
-	undo_redo->add_do_method(gradient.ptr(), "set_colors", get_colors());
-	undo_redo->add_do_method(gradient.ptr(), "set_interpolation_mode", get_interpolation_mode());
+	undo_redo->add_do_method(gradient.ptr(), "set_offsets", gradient_edit->get_offsets());
+	undo_redo->add_do_method(gradient.ptr(), "set_colors", gradient_edit->get_colors());
+	undo_redo->add_do_method(gradient.ptr(), "set_interpolation_mode", gradient_edit->get_interpolation_mode());
 	undo_redo->add_undo_method(gradient.ptr(), "set_offsets", gradient->get_offsets());
 	undo_redo->add_undo_method(gradient.ptr(), "set_colors", gradient->get_colors());
 	undo_redo->add_undo_method(gradient.ptr(), "set_interpolation_mode", gradient->get_interpolation_mode());
@@ -66,45 +66,48 @@ void GradientEditor::_ramp_changed() {
 	editing = false;
 }
 
-void GradientEditor::_bind_methods() {
-}
-
 void GradientEditor::set_gradient(const Ref<Gradient> &p_gradient) {
 	gradient = p_gradient;
 	connect("ramp_changed", callable_mp(this, &GradientEditor::_ramp_changed));
 	gradient->connect("changed", callable_mp(this, &GradientEditor::_gradient_changed));
-	set_points(gradient->get_points());
-	set_interpolation_mode(gradient->get_interpolation_mode());
+	gradient_edit->set_points(gradient->get_points());
+	gradient_edit->set_interpolation_mode(gradient->get_interpolation_mode());
 }
 
 void GradientEditor::reverse_gradient() {
 	gradient->reverse();
-	set_points(gradient->get_points());
+	gradient_edit->set_points(gradient->get_points());
 	emit_signal(SNAME("ramp_changed"));
-	update();
+	gradient_edit->update();
 }
 
-GradientEditor::GradientEditor() {
-	editing = false;
-}
-
-///////////////////////
-
-void GradientReverseButton::_notification(int p_what) {
+void GradientEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_DRAW: {
-			Ref<Texture2D> icon = get_theme_icon(SNAME("ReverseGradient"), SNAME("EditorIcons"));
-			if (is_pressed()) {
-				draw_texture_rect(icon, Rect2(margin, margin, icon->get_width(), icon->get_height()), false, get_theme_color(SNAME("icon_pressed_color"), SNAME("Button")));
-			} else {
-				draw_texture_rect(icon, Rect2(margin, margin, icon->get_width(), icon->get_height()));
-			}
-		} break;
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			reverse_button->set_icon(get_theme_icon(SNAME("ReverseGradient"), SNAME("EditorIcons")));
+		}
 	}
 }
 
-Size2 GradientReverseButton::get_minimum_size() const {
-	return (get_theme_icon(SNAME("ReverseGradient"), SNAME("EditorIcons"))->get_size() + Size2(margin * 2, margin * 2));
+GradientEditor::GradientEditor() {
+	// Get default color picker mode and shape from editor settings.
+	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
+	if (default_color_mode == 1) {
+		gradient_edit->get_picker()->set_hsv_mode(true);
+	} else if (default_color_mode == 2) {
+		gradient_edit->get_picker()->set_raw_mode(true);
+	}
+	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
+	gradient_edit->get_picker()->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
+
+	HBoxContainer *gradient_tools_hbox = memnew(HBoxContainer);
+	add_child(gradient_tools_hbox);
+
+	reverse_button = memnew(Button);
+	reverse_button->set_tooltip(TTR("Reverse/Mirror Gradient"));
+	gradient_tools_hbox->add_child(reverse_button);
+	reverse_button->connect("pressed", callable_mp(this, &GradientEditor::reverse_gradient));
 }
 
 ///////////////////////
@@ -117,26 +120,9 @@ void EditorInspectorPluginGradient::parse_begin(Object *p_object) {
 	Gradient *gradient = Object::cast_to<Gradient>(p_object);
 	Ref<Gradient> g(gradient);
 
-	editor = memnew(GradientEditor);
+	GradientEditor *editor = memnew(GradientEditor);
 	editor->set_gradient(g);
 	add_custom_control(editor);
-
-	int picker_shape = EDITOR_GET("interface/inspector/default_color_picker_shape");
-	editor->get_picker()->set_picker_shape((ColorPicker::PickerShapeType)picker_shape);
-
-	reverse_btn = memnew(GradientReverseButton);
-
-	gradient_tools_hbox = memnew(HBoxContainer);
-	gradient_tools_hbox->add_child(reverse_btn);
-
-	add_custom_control(gradient_tools_hbox);
-
-	reverse_btn->connect("pressed", callable_mp(this, &EditorInspectorPluginGradient::_reverse_button_pressed));
-	reverse_btn->set_tooltip(TTR("Reverse/mirror gradient."));
-}
-
-void EditorInspectorPluginGradient::_reverse_button_pressed() {
-	editor->reverse_gradient();
 }
 
 GradientEditorPlugin::GradientEditorPlugin() {

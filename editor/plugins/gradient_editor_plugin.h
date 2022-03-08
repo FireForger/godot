@@ -34,17 +34,19 @@
 #include "editor/editor_plugin.h"
 #include "scene/gui/gradient_edit.h"
 
-class GradientEditor : public GradientEdit {
-	GDCLASS(GradientEditor, GradientEdit);
+class GradientEditor : public VBoxContainer {
+	GDCLASS(GradientEditor, VBoxContainer);
 
-	bool editing;
+	bool editing = false;
 	Ref<Gradient> gradient;
+	GradientEdit *gradient_edit;
+	Button *reverse_button;
 
 	void _gradient_changed();
 	void _ramp_changed();
 
 protected:
-	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
 	virtual Size2 get_minimum_size() const override;
@@ -53,23 +55,8 @@ public:
 	GradientEditor();
 };
 
-class GradientReverseButton : public BaseButton {
-	GDCLASS(GradientReverseButton, BaseButton);
-
-	int margin = 2;
-
-	void _notification(int p_what);
-	virtual Size2 get_minimum_size() const override;
-};
-
 class EditorInspectorPluginGradient : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginGradient, EditorInspectorPlugin);
-
-	GradientEditor *editor;
-	HBoxContainer *gradient_tools_hbox;
-	GradientReverseButton *reverse_btn;
-
-	void _reverse_button_pressed();
 
 public:
 	virtual bool can_handle(Object *p_object) override;

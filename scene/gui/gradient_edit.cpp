@@ -35,15 +35,12 @@
 GradientEdit::GradientEdit() {
 	set_focus_mode(FOCUS_ALL);
 
-	popup = memnew(PopupPanel);
-	picker = memnew(ColorPicker);
-	popup->add_child(picker);
+	picker_button = memnew(ColorPickerButton);
 
 	gradient_cache.instantiate();
 	preview_texture.instantiate();
 
 	preview_texture->set_width(1024);
-	add_child(popup, false, INTERNAL_MODE_FRONT);
 }
 
 int GradientEdit::_get_point_from_pos(int x) {
@@ -60,24 +57,6 @@ int GradientEdit::_get_point_from_pos(int x) {
 		}
 	}
 	return result;
-}
-
-void GradientEdit::_show_color_picker() {
-	if (grabbed == -1) {
-		return;
-	}
-	picker->set_pick_color(points[grabbed].color);
-	Size2 minsize = popup->get_contents_minimum_size();
-	bool show_above = false;
-	if (get_global_position().y + get_size().y + minsize.y > get_viewport_rect().size.y) {
-		show_above = true;
-	}
-	if (show_above) {
-		popup->set_position(get_screen_position() - Vector2(0, minsize.y));
-	} else {
-		popup->set_position(get_screen_position() + Vector2(0, get_size().y));
-	}
-	popup->popup();
 }
 
 GradientEdit::~GradientEdit() {
@@ -101,7 +80,20 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 	// Show color picker on double click.
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_double_click() && mb->is_pressed()) {
 		grabbed = _get_point_from_pos(mb->get_position().x);
-		_show_color_picker();
+
+		if (grabbed != -1) {
+			picker_button->set_pick_color(points[grabbed].color);
+
+			PopupPanel *popup = picker_button->get_popup();
+			Size2 minsize = popup->get_contents_minimum_size();
+			if (get_global_position().y + get_size().y + minsize.y > get_viewport_rect().size.y) {
+				popup->set_position(get_screen_position() - Vector2(0, minsize.y));
+			} else {
+				popup->set_position(get_screen_position() + Vector2(0, get_size().y));
+			}
+			popup->popup();
+		}
+
 		accept_event();
 	}
 
@@ -148,16 +140,10 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 		int x = mb->get_position().x;
 		int total_w = get_size().width - get_size().height - draw_spacing;
 
-		//Check if color selector was clicked.
-		if (x > total_w + draw_spacing) {
-			_show_color_picker();
-			return;
-		}
-
 		grabbing = true;
 
 		grabbed = _get_point_from_pos(x);
-		//grab or select
+		// Grab or select.
 		if (grabbed != -1) {
 			return;
 		}
@@ -289,8 +275,8 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 void GradientEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			if (!picker->is_connected("color_changed", callable_mp(this, &GradientEdit::_color_changed))) {
-				picker->connect("color_changed", callable_mp(this, &GradientEdit::_color_changed));
+			if (!picker_button->get_picker()->is_connected("color_changed", callable_mp(this, &GradientEdit::_color_changed))) {
+				picker_button->get_picker()->connect("color_changed", callable_mp(this, &GradientEdit::_color_changed));
 			}
 			[[fallthrough]];
 		}
@@ -340,24 +326,22 @@ void GradientEdit::_notification(int p_what) {
 				}
 			}
 
-			// Draw "button" for color selector.
+			// Draw color picker button.
 			draw_texture_rect(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")), Rect2(total_w + draw_spacing, 0, h, h), true);
 			if (grabbed != -1) {
-				// Draw with selection color.
-				draw_rect(Rect2(total_w + draw_spacing, 0, h, h), points[grabbed].color);
+				picker_button->show();
+				picker_button->set_rect(Rect2(total_w + draw_spacing, 0, h, h));
 			} else {
-				// If no color selected draw grey color with 'X' on top.
-				draw_rect(Rect2(total_w + draw_spacing, 0, h, h), Color(0.5, 0.5, 0.5, 1));
-				draw_line(Vector2(total_w + draw_spacing, 0), Vector2(total_w + draw_spacing + h, h), Color(1, 1, 1, 0.6));
-				draw_line(Vector2(total_w + draw_spacing, h), Vector2(total_w + draw_spacing + h, 0), Color(1, 1, 1, 0.6));
+				picker_button->hide();
+				draw_style_box(get_theme_stylebox(SNAME("normal"), SNAME("Button")), Rect2(total_w + draw_spacing, 0, h, h));
+
+				Ref<Texture2D> x_icon = get_theme_icon(SNAME("Close"), SNAME("EditorIcons"));
+				draw_texture(x_icon, Vector2(total_w + draw_spacing + h / 2, total_w + draw_spacing + h / 2) - x_icon->get_size() / 2);
 			}
 
 			// Draw borders around color ramp if in focus.
 			if (has_focus()) {
-				draw_line(Vector2(-1, -1), Vector2(total_w + 1, -1), Color(1, 1, 1, 0.6));
-				draw_line(Vector2(total_w + 1, -1), Vector2(total_w + 1, h + 1), Color(1, 1, 1, 0.6));
-				draw_line(Vector2(total_w + 1, h + 1), Vector2(-1, h + 1), Color(1, 1, 1, 0.6));
-				draw_line(Vector2(-1, -1), Vector2(-1, h + 1), Color(1, 1, 1, 0.6));
+				draw_rect(Rect2(-1, -1, total_w + 1, h + 1), Color(1, 1, 1, 0.6), false);
 			}
 		} break;
 
@@ -434,7 +418,7 @@ Gradient::InterpolationMode GradientEdit::get_interpolation_mode() {
 }
 
 ColorPicker *GradientEdit::get_picker() {
-	return picker;
+	return picker_button->get_picker();
 }
 
 void GradientEdit::_bind_methods() {
