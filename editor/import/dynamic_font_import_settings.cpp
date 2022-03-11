@@ -488,6 +488,10 @@ void DynamicFontImportSettings::_main_prop_changed(const String &p_edited_proper
 		if (font_preview->get_data_count() > 0) {
 			font_preview->get_data(0)->set_embolden(import_settings_data->get("embolden"));
 		}
+	} else if (p_edited_property == "slant") {
+		if (font_preview->get_data_count() > 0) {
+			font_preview->get_data(0)->set_slant(import_settings_data->get("slant"));
+		}
 	} else if (p_edited_property == "transform") {
 		if (font_preview->get_data_count() > 0) {
 			font_preview->get_data(0)->set_transform(import_settings_data->get("transform"));
@@ -933,6 +937,7 @@ void DynamicFontImportSettings::_re_import() {
 	main_settings["hinting"] = import_settings_data->get("hinting");
 	main_settings["subpixel_positioning"] = import_settings_data->get("subpixel_positioning");
 	main_settings["embolden"] = import_settings_data->get("embolden");
+	main_settings["slant"] = import_settings_data->get("slant");
 	main_settings["transform"] = import_settings_data->get("transform");
 	main_settings["oversampling"] = import_settings_data->get("oversampling");
 	main_settings["compress"] = import_settings_data->get("compress");
@@ -1286,6 +1291,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 		font_preview->get_data(0)->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
 		font_preview->get_data(0)->set_subpixel_positioning((TextServer::SubpixelPositioning)import_settings_data->get("subpixel_positioning").operator int());
 		font_preview->get_data(0)->set_embolden(import_settings_data->get("embolden"));
+		font_preview->get_data(0)->set_slant(import_settings_data->get("slant"));
 		font_preview->get_data(0)->set_transform(import_settings_data->get("transform"));
 		font_preview->get_data(0)->set_oversampling(import_settings_data->get("oversampling"));
 	}
@@ -1339,6 +1345,12 @@ DynamicFontImportSettings *DynamicFontImportSettings::get_singleton() {
 DynamicFontImportSettings::DynamicFontImportSettings() {
 	singleton = this;
 
+	PropertyInfo slant_prop_info = PropertyInfo(Variant::FLOAT, "slant");
+	slant_prop_info.linked_properties.push_back("transform");
+
+	PropertyInfo transform_prop_info = PropertyInfo(Variant::TRANSFORM2D, "transform");
+	transform_prop_info.linked_properties.push_back("slant");
+
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "antialiased"), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), 8));
@@ -1347,9 +1359,10 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel"), 1));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "embolden", PROPERTY_HINT_RANGE, "-2,2,0.01"), 0.f));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::TRANSFORM2D, "transform"), Transform2D()));
+	options_general.push_back(ResourceImporter::ImportOption(slant_prop_info, 0.f));
+	options_general.push_back(ResourceImporter::ImportOption(transform_prop_info, Transform2D()));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "compress", PROPERTY_HINT_NONE, ""), false));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "compress"), false));
 
 	// Popup menus
 

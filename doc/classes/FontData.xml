@@ -600,6 +600,10 @@
 		<member name="oversampling" type="float" setter="set_oversampling" getter="get_oversampling" default="0.0">
 			Font oversampling factor, if set to [code]0.0[/code] global oversampling factor is used instead. Used by dynamic fonts only.
 		</member>
+		<member name="slant" type="float" setter="set_slant" getter="get_slant" default="0.0">
+			If is not equal to zero, slants the font outlines slightly, to simulate italic typeface. Positive values slants to the right, negative to the left.
+			[b]Note:[/b] This is an alias for [member transform][code].x.y[/code].
+		</member>
 		<member name="style_name" type="String" setter="set_font_style_name" getter="get_font_style_name" default="&quot;&quot;">
 			Font style name.
 		</member>
@@ -608,7 +612,6 @@
 		</member>
 		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">
 			2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.
-			For example, to simulate italic typeface by slanting, apply the following transform [code]Transform2D(1.0, slant, 0.0, 1.0, 0.0, 0.0)[/code].
 		</member>
 	</members>
 </class>

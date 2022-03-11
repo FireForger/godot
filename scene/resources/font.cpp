@@ -110,6 +110,9 @@ void FontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_embolden", "strength"), &FontData::set_embolden);
 	ClassDB::bind_method(D_METHOD("get_embolden"), &FontData::get_embolden);
 
+	ClassDB::bind_method(D_METHOD("set_slant", "slant"), &FontData::set_slant);
+	ClassDB::bind_method(D_METHOD("get_slant"), &FontData::get_slant);
+
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &FontData::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &FontData::get_transform);
 
@@ -218,6 +221,7 @@ void FontData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_style", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_font_style", "get_font_style");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel", PROPERTY_USAGE_STORAGE), "set_subpixel_positioning", "get_subpixel_positioning");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "embolden", PROPERTY_HINT_RANGE, "-2,2,0.01", PROPERTY_USAGE_STORAGE), "set_embolden", "get_embolden");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "slant", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_slant", "get_slant");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_transform", "get_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_pixel_range", "get_msdf_pixel_range");
@@ -1410,6 +1414,16 @@ void FontData::set_embolden(float p_strength) {
 
 float FontData::get_embolden() const {
 	return embolden;
+}
+
+void FontData::set_slant(float p_slant) {
+	Transform2D new_transform = transform;
+	new_transform[0][1] = p_slant;
+	set_transform(new_transform);
+}
+
+float FontData::get_slant() const {
+	return transform[0][1];
 }
 
 void FontData::set_transform(Transform2D p_transform) {

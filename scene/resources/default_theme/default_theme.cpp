@@ -1063,14 +1063,14 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 		for (int i = 0; i < default_font->get_data_count(); i++) {
 			Ref<FontData> data = default_font->get_data(i)->duplicate();
 			data->set_embolden(1.2);
-			data->set_transform(Transform2D(1.0, 0.4, 0.0, 1.0, 0.0, 0.0));
+			data->set_slant(0.4);
 			bold_italics_font->add_data(data);
 		}
 
 		italics_font.instantiate();
 		for (int i = 0; i < default_font->get_data_count(); i++) {
 			Ref<FontData> data = default_font->get_data(i)->duplicate();
-			data->set_transform(Transform2D(1.0, 0.4, 0.0, 1.0, 0.0, 0.0));
+			data->set_slant(0.4);
 			italics_font->add_data(data);
 		}
 	}

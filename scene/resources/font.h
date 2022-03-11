@@ -127,6 +127,9 @@ public:
 	virtual void set_embolden(float p_strength);
 	virtual float get_embolden() const;
 
+	virtual void set_slant(float p_slant);
+	virtual float get_slant() const;
+
 	virtual void set_transform(Transform2D p_transform);
 	virtual Transform2D get_transform() const;
 

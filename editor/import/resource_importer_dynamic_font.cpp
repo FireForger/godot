@@ -101,6 +101,12 @@ String ResourceImporterDynamicFont::get_preset_name(int p_idx) const {
 void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	bool msdf = p_preset == PRESET_MSDF;
 
+	PropertyInfo slant_prop_info = PropertyInfo(Variant::FLOAT, "slant");
+	slant_prop_info.linked_properties.push_back("transform");
+
+	PropertyInfo transform_prop_info = PropertyInfo(Variant::TRANSFORM2D, "transform");
+	transform_prop_info.linked_properties.push_back("slant");
+
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "antialiased"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), (msdf) ? true : false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), 8));
@@ -110,7 +116,8 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "embolden", PROPERTY_HINT_RANGE, "-2,2,0.01"), 0.f));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::TRANSFORM2D, "transform"), Transform2D()));
+	r_options->push_back(ImportOption(slant_prop_info, 0.f));
+	r_options->push_back(ImportOption(transform_prop_info, Transform2D()));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
