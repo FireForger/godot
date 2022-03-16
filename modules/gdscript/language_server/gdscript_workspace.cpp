@@ -344,7 +344,6 @@ Error GDScriptWorkspace::initialize() {
 		Vector<DocData::MethodDoc> methods_signals;
 		methods_signals.append_array(class_data.constructors);
 		methods_signals.append_array(class_data.methods);
-		methods_signals.append_array(class_data.operators);
 		const int signal_start_idx = methods_signals.size();
 		methods_signals.append_array(class_data.signals);
 
@@ -389,6 +388,20 @@ Error GDScriptWorkspace::initialize() {
 				return_type = "void";
 			}
 			symbol.detail = "func " + class_name + "." + data.name + "(" + params + ") -> " + return_type;
+			symbol.documentation = data.description;
+			class_symbol.children.push_back(symbol);
+		}
+
+		for (int i = 0; i < class_data.operators.size(); i++) {
+			const DocData::OperatorDoc &data = class_data.operators[i];
+			lsp::DocumentSymbol symbol;
+			symbol.name = data.name;
+			symbol.native_class = class_name;
+			symbol.kind = lsp::SymbolKind::Method;
+
+			String return_type = data.return_type.is_empty() ? "void" : return_type;
+
+			symbol.detail = "func " + class_name + ".operator " + data.name + "(right: " + data.argument.type + ") -> " + return_type);
 			symbol.documentation = data.description;
 			class_symbol.children.push_back(symbol);
 		}

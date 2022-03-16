@@ -119,6 +119,9 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		} else if (tag == "theme_item") {
 			topic = "theme_item";
 			table = &this->theme_property_line;
+		} else if (tag == "operator") {
+			topic = "operator";
+			table = &this->operator_line;
 		} else {
 			return;
 		}
@@ -322,6 +325,18 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	}
 }
 
+void EditorHelp::_add_missing_description(const String &p_type) {
+	class_desc->add_image(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+	class_desc->add_text(" ");
+	class_desc->push_color(comment_color);
+	if (p_classdoc.is_script_doc) {
+		class_desc->append_text(vformat(TTR("There is currently no description for this %s."), p_type));
+	} else {
+		class_desc->append_text(vformat(TTR("There is currently no description for this %s. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"), p_type).replace("$url", CONTRIBUTE_URL).replace("$color", title_color.to_html(false)));
+	}
+	class_desc->pop();
+}
+
 void EditorHelp::_add_bulletpoint() {
 	static const char32_t prefix[3] = { 0x25CF /* filled circle */, ' ', 0 };
 	class_desc->add_text(String(prefix));
@@ -417,7 +432,7 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc p_classdoc,
 	Ref<Font> doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
 	Ref<Font> doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
 	Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
-	String link_color_text = title_color.to_html(false);
+
 	class_desc->pop();
 	class_desc->pop();
 
@@ -473,15 +488,7 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc p_classdoc,
 			if (!methods_filtered[i].description.strip_edges().is_empty()) {
 				_add_text(DTR(methods_filtered[i].description));
 			} else {
-				class_desc->add_image(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
-				class_desc->add_text(" ");
-				class_desc->push_color(comment_color);
-				if (p_classdoc.is_script_doc) {
-					class_desc->append_text(vformat(TTR("There is currently no description for this %s."), p_method_type));
-				} else {
-					class_desc->append_text(vformat(TTR("There is currently no description for this %s. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"), p_method_type).replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
-				}
-				class_desc->pop();
+				_add_missing_description(p_method_type);
 			}
 
 			class_desc->pop();
@@ -506,7 +513,6 @@ void EditorHelp::_update_doc() {
 	section_line.clear();
 
 	_update_theme();
-	String link_color_text = title_color.to_html(false);
 
 	DocData::ClassDoc cd = doc->class_list[edited_class]; // Make a copy, so we can sort without worrying.
 
@@ -849,6 +855,7 @@ void EditorHelp::_update_doc() {
 		_update_method_list(methods, method_descriptions);
 	}
 
+	// Operators
 	if (!cd.operators.is_empty()) {
 		if (sort_methods) {
 			cd.operators.sort();
@@ -858,7 +865,64 @@ void EditorHelp::_update_doc() {
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Operators"));
-		_update_method_list(cd.operators, operator_descriptions);
+
+		Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
+		class_desc->pop();
+		class_desc->pop();
+
+		class_desc->add_newline();
+		class_desc->push_font(doc_code_font);
+		class_desc->push_indent(1);
+		class_desc->push_table(2);
+		class_desc->set_table_column_expand(1, true);
+
+		for (int i = 0; i < cd.operators.size(); i++) {
+			DocData::OperatorDoc op = cd.operators[i];
+
+			if (!op.description.is_empty()) {
+				operator_descriptions = true;
+			}
+
+			operator_line[op.name] = class_desc->get_line_count() - 2; // Gets overridden if description.
+
+			class_desc->push_cell();
+			class_desc->push_paragraph(HORIZONTAL_ALIGNMENT_RIGHT, Control::TEXT_DIRECTION_AUTO, "");
+
+			_add_type(op.return_type);
+
+			class_desc->pop(); // align
+			class_desc->pop(); // cell
+			class_desc->push_cell();
+			class_desc->push_color(headline_color);
+
+			if (op.name.contains("%s")) {
+				PackedStringArray name_slices = op.name.split("%s", true, 2);
+
+				for (int i = 0; i < 2; i++) {
+					if (!name_slices[i].is_empty()) {
+						class_desc->push_meta("@operator " + op.name);
+						_add_text(name_slices[i]);
+						class_desc->pop(); // meta
+					}
+					if (i == 0) {
+						_add_type(op.argument.type);
+					}
+				}
+			} else {
+				class_desc->push_meta("@operator " + op.name);
+				_add_text(op.name);
+				class_desc->pop(); // meta
+			}
+
+			class_desc->pop(); // color
+			class_desc->pop(); // cell
+		}
+
+		class_desc->pop(); // table
+		class_desc->pop();
+		class_desc->pop(); // font
+		class_desc->add_newline();
+		class_desc->add_newline();
 	}
 
 	// Theme properties
@@ -1353,15 +1417,7 @@ void EditorHelp::_update_doc() {
 			if (!cd.properties[i].description.strip_edges().is_empty()) {
 				_add_text(DTR(cd.properties[i].description));
 			} else {
-				class_desc->add_image(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
-				class_desc->add_text(" ");
-				class_desc->push_color(comment_color);
-				if (cd.is_script_doc) {
-					class_desc->append_text(TTR("There is currently no description for this property."));
-				} else {
-					class_desc->append_text(TTR("There is currently no description for this property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
-				}
-				class_desc->pop();
+				_add_missing_description("property");
 			}
 			class_desc->pop();
 			class_desc->pop();
@@ -1396,7 +1452,40 @@ void EditorHelp::_update_doc() {
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Operator Descriptions"));
-		_update_method_descriptions(cd, cd.operators, "operator");
+
+		Ref<Font> doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
+		Ref<Font> doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
+
+		class_desc->pop();
+		class_desc->pop();
+
+		class_desc->add_newline();
+		class_desc->add_newline();
+
+		for (int i = 0; i < cd.operators.size(); i++) {
+			class_desc->push_font(doc_code_font);
+			_add_method(cd.operators[i], false);
+			class_desc->pop();
+
+			class_desc->add_newline();
+			class_desc->add_newline();
+
+			class_desc->push_color(text_color);
+			class_desc->push_font(doc_font);
+			class_desc->push_indent(1);
+			if (!cd.operators[i].description.strip_edges().is_empty()) {
+				_add_text(DTR(cd.operators[i].description));
+			} else {
+				_add_missing_description();
+			}
+
+			class_desc->pop();
+			class_desc->pop();
+			class_desc->pop();
+			class_desc->add_newline();
+			class_desc->add_newline();
+			class_desc->add_newline();
+		}
 	}
 	scroll_locked = false;
 }
@@ -1601,7 +1690,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			p_rt->add_text("[");
 			pos = brk_pos + 1;
 
-		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ")) {
+		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("operator ")) {
 			const int tag_end = tag.find(" ");
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");

@@ -869,7 +869,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
 							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
 							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
 							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
-						match.operators.push_back(const_cast<DocData::MethodDoc *>(&class_doc.operators[i]));
+						match.operators.push_back(const_cast<DocData::OperatorDoc *>(&class_doc.operators[i]));
 					}
 				}
 			}

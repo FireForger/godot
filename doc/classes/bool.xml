@@ -121,28 +121,28 @@
 		</constructor>
 	</constructors>
 	<operators>
-		<operator name="operator !=">
+		<operator name="bool != %s">
 			<return type="bool" />
 			<argument index="0" name="right" type="bool" />
 			<description>
 				Returns [code]true[/code] if two bools are different, i.e. one is [code]true[/code] and the other is [code]false[/code].
 			</description>
 		</operator>
-		<operator name="operator &lt;">
+		<operator name="bool &lt; %s">
 			<return type="bool" />
 			<argument index="0" name="right" type="bool" />
 			<description>
 				Returns [code]true[/code] if the left operand is [code]false[/code] and the right operand is [code]true[/code].
 			</description>
 		</operator>
-		<operator name="operator ==">
+		<operator name="bool == %s">
 			<return type="bool" />
 			<argument index="0" name="right" type="bool" />
 			<description>
 				Returns [code]true[/code] if two bools are equal, i.e. both are [code]true[/code] or both are [code]false[/code].
 			</description>
 		</operator>
-		<operator name="operator &gt;">
+		<operator name="bool &gt; %s">
 			<return type="bool" />
 			<argument index="0" name="right" type="bool" />
 			<description>

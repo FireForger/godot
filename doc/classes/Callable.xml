@@ -148,16 +148,12 @@
 		</method>
 	</methods>
 	<operators>
-		<operator name="operator !=">
-			<return type="bool" />
-			<argument index="0" name="right" type="Callable" />
+		<operator name="Callable != %s" return_type="bool" argument_type="Callable">
 			<description>
 				Returns [code]true[/code] if both [Callable]s invoke different targets.
 			</description>
 		</operator>
-		<operator name="operator ==">
-			<return type="bool" />
-			<argument index="0" name="right" type="Callable" />
+		<operator name="Callable == %s" return_type="bool" argument_type="Callable">
 			<description>
 				Returns [code]true[/code] if both [Callable]s invoke the same custom target.
 			</description>

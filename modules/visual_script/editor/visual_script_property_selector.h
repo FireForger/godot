@@ -148,7 +148,7 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 		String category = "";
 		Vector<DocData::MethodDoc *> constructors;
 		Vector<DocData::MethodDoc *> methods;
-		Vector<DocData::MethodDoc *> operators;
+		Vector<DocData::OperatorDoc *> operators;
 		Vector<DocData::MethodDoc *> signals;
 		Vector<DocData::ConstantDoc *> constants;
 		Vector<DocData::PropertyDoc *> properties;

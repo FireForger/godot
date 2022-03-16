@@ -223,53 +223,53 @@
 		</constant>
 	</constants>
 	<operators>
-		<operator name="operator !=">
+		<operator name="Basis !=">
 			<return type="bool" />
-			<argument index="0" name="right" type="Basis" />
+			<argument type="Basis" />
 			<description>
 				Returns [code]true[/code] if the [Basis] matrices are not equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
-		<operator name="operator *">
+		<operator name="Basis * %s">
 			<return type="Basis" />
-			<argument index="0" name="right" type="Basis" />
+			<argument type="Basis" />
 			<description>
 				Composes these two basis matrices by multiplying them together. This has the effect of transforming the second basis (the child) by the first basis (the parent).
 			</description>
 		</operator>
-		<operator name="operator *">
+		<operator name="Basis * %s">
 			<return type="Vector3" />
-			<argument index="0" name="right" type="Vector3" />
+			<argument type="Vector3" />
 			<description>
 				Transforms (multiplies) the [Vector3] by the given [Basis] matrix.
 			</description>
 		</operator>
-		<operator name="operator *">
+		<operator name="Basis * %s">
 			<return type="Basis" />
-			<argument index="0" name="right" type="float" />
+			<argument type="float" />
 			<description>
 				This operator multiplies all components of the [Basis], which scales it uniformly.
 			</description>
 		</operator>
-		<operator name="operator *">
+		<operator name="Basis * %s">
 			<return type="Basis" />
-			<argument index="0" name="right" type="int" />
+			<argument type="int" />
 			<description>
 				This operator multiplies all components of the [Basis], which scales it uniformly.
 			</description>
 		</operator>
-		<operator name="operator ==">
+		<operator name="Basis == %s">
 			<return type="bool" />
-			<argument index="0" name="right" type="Basis" />
+			<argument type="Basis" />
 			<description>
 				Returns [code]true[/code] if the [Basis] matrices are exactly equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
-		<operator name="operator []">
+		<operator name="Basis [%s]">
 			<return type="Vector3" />
-			<argument index="0" name="index" type="int" />
+			<argument type="int" />
 			<description>
 				Access basis components using their index. [code]b[0][/code] is equivalent to [code]b.x[/code], [code]b[1][/code] is equivalent to [code]b.y[/code], and [code]b[2][/code] is equivalent to [code]b.z[/code].
 			</description>

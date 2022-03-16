@@ -509,51 +509,51 @@
 		</method>
 	</methods>
 	<operators>
-		<operator name="operator !=">
+		<operator name="Array != %s">
 			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
+			<argument type="Array" />
 			<description>
 			</description>
 		</operator>
-		<operator name="operator +">
+		<operator name="Array + %s">
 			<return type="Array" />
-			<argument index="0" name="right" type="Array" />
+			<argument type="Array" />
 			<description>
 			</description>
 		</operator>
-		<operator name="operator &lt;">
+		<operator name="Array &lt; %s">
 			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
+			<argument type="Array" />
 			<description>
 			</description>
 		</operator>
-		<operator name="operator &lt;=">
+		<operator name="Array &lt;= %s">
 			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
+			<argument type="Array" />
 			<description>
 			</description>
 		</operator>
-		<operator name="operator ==">
+		<operator name="Array == %s">
 			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
+			<argument type="Array" />
 			<description>
 			</description>
 		</operator>
-		<operator name="operator &gt;">
+		<operator name="Array &gt; %s">
 			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
+			<argument type="Array" />
 			<description>
 			</description>
 		</operator>
-		<operator name="operator &gt;=">
+		<operator name="Array &gt;= %s">
 			<return type="bool" />
-			<argument index="0" name="right" type="Array" />
+			<argument type="Array" />
 			<description>
 			</description>
 		</operator>
-		<operator name="operator []">
+		<operator name="Array [%s]">
 			<return type="void" />
-			<argument index="0" name="index" type="int" />
+			<argument type="int" />
 			<description>
 			</description>
 		</operator>

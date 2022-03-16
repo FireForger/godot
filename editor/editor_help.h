@@ -111,6 +111,7 @@ class EditorHelp : public VBoxContainer {
 	Map<String, int> theme_property_line;
 	Map<String, int> constant_line;
 	Map<String, int> enum_line;
+	Map<String, int> operator_line;
 	Map<String, Map<String, int>> enum_values_line;
 	int description_line;
 
@@ -149,6 +150,7 @@ class EditorHelp : public VBoxContainer {
 	//void _button_pressed(int p_idx);
 	void _add_type(const String &p_type, const String &p_enum = String());
 	void _add_method(const DocData::MethodDoc &p_method, bool p_overview = true);
+	void _add_missing_description();
 
 	void _add_bulletpoint();
 

@@ -207,49 +207,24 @@ void DocTools::merge_from(const DocTools &p_data) {
 		}
 
 		for (int i = 0; i < c.operators.size(); i++) {
-			DocData::MethodDoc &m = c.operators.write[i];
+			DocData::OperatorDoc &op = c.operators.write[i];
 
 			for (int j = 0; j < cf.operators.size(); j++) {
-				if (cf.operators[j].name != m.name) {
+				DocData::OperatorDoc &cf_op = cf.operators[j];
+				if (cf_op.name != op.name) {
 					continue;
 				}
 
-				{
-					// Since operators can repeat, we need to check the type of
-					// the arguments so we make sure they are different.
-					if (cf.operators[j].arguments.size() != m.arguments.size()) {
-						continue;
-					}
-					int arg_count = cf.operators[j].arguments.size();
-					Vector<bool> arg_used;
-					arg_used.resize(arg_count);
-					for (int l = 0; l < arg_count; ++l) {
-						arg_used.write[l] = false;
-					}
-					// also there is no guarantee that argument ordering will match, so we
-					// have to check one by one so we make sure we have an exact match
-					for (int k = 0; k < arg_count; ++k) {
-						for (int l = 0; l < arg_count; ++l) {
-							if (cf.operators[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
-								arg_used.write[l] = true;
-								break;
-							}
-						}
-					}
-					bool not_the_same = false;
-					for (int l = 0; l < arg_count; ++l) {
-						if (!arg_used[l]) { // at least one of the arguments was different
-							not_the_same = true;
-						}
-					}
-					if (not_the_same) {
-						continue;
-					}
+				// Since operators can repeat, we need to check the type of
+				// the arguments so we make sure they are different.
+				if ((cf_op.argument == nullptr) != (op.argument == nullptr)) {
+					continue;
+				}
+				if (cf_op.argument.type != op.argument.type) {
+					continue;
 				}
 
-				const DocData::MethodDoc &mf = cf.operators[j];
-
-				m.description = mf.description;
+				op.description = cf_op.description;
 				break;
 			}
 		}
@@ -683,6 +658,9 @@ void DocTools::generate(bool p_basic_types) {
 		method_list.sort();
 		Variant::get_constructor_list(Variant::Type(i), &method_list);
 
+		List<OperatorInfo> operator_list;
+
+		// Add operators.
 		for (int j = 0; j < Variant::OP_AND; j++) { // Showing above 'and' is pretty confusing and there are a lot of variations.
 			for (int k = 0; k < Variant::VARIANT_MAX; k++) {
 				// Prevent generating for comparison with null.
@@ -697,58 +675,74 @@ void DocTools::generate(bool p_basic_types) {
 					if (i == Variant::STRING && Variant::Operator(j) == Variant::OP_MODULE) {
 						continue;
 					}
-					MethodInfo mi;
-					mi.name = "operator " + Variant::get_operator_name(Variant::Operator(j));
-					mi.return_val.type = rt;
-					if (k != Variant::NIL) {
-						PropertyInfo arg;
-						arg.name = "right";
-						arg.type = Variant::Type(k);
-						mi.arguments.push_back(arg);
+					OperatorInfo op_info;
+					if (j == Variant::OP_NEGATE || j == Variant::OP_POSITIVE) {
+						// Add unary- and unary+ as a prefix.
+						// Ex. "+int", "-float", "-Vector2", etc.
+						op_info.name = Variant::get_operator_name(Variant::Operator(j)).trim_prefix("unary") + Variant::get_type_name(i);
+					} else {
+						// Add operator name between base and argument types.
+						op_info.name = Variant::get_type_name(i) + " " + Variant::get_operator_name(Variant::Operator(j)) + " {_}";
 					}
-					method_list.push_back(mi);
+					op_info.return_type = rt;
+					op_info.argument_type = Variant::Type(k);
+					operator_list.push_back(op_info);
 				}
 			}
 		}
 
 		if (i == Variant::STRING) {
 			// We skipped % operator above, and we register it manually once for Variant arg type here.
-			MethodInfo mi;
-			mi.name = "operator %";
-			mi.return_val.type = Variant::STRING;
+			OperatorInfo op_info;
+			op_info.name = Variant::get_type_name(i) + " %% %s";
+			op_info.return_type = Variant::STRING;
+			op_info.argument_type_is_variant = true;
 
-			PropertyInfo arg;
-			arg.name = "right";
-			arg.type = Variant::NIL;
-			arg.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
-			mi.arguments.push_back(arg);
-
-			method_list.push_back(mi);
+			operator_list.push_back(op_info);
 		}
 
 		if (Variant::is_keyed(Variant::Type(i))) {
-			MethodInfo mi;
-			mi.name = "operator []";
-			mi.return_val.type = Variant::NIL;
-			mi.return_val.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+			OperatorInfo op_info;
+			op_info.name = Variant::get_type_name(i) + "[%s]";
+			op_info.return_type_is_variant = true;
+			op_info.argument_type_is_variant = true;
 
-			PropertyInfo arg;
-			arg.name = "key";
-			arg.type = Variant::NIL;
-			arg.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
-			mi.arguments.push_back(arg);
-
-			method_list.push_back(mi);
+			operator_list.push_back(op_info);
 		} else if (Variant::has_indexing(Variant::Type(i))) {
-			MethodInfo mi;
-			mi.name = "operator []";
-			mi.return_val.type = Variant::get_indexed_element_type(Variant::Type(i));
-			PropertyInfo arg;
-			arg.name = "index";
-			arg.type = Variant::INT;
-			mi.arguments.push_back(arg);
+			OperatorInfo op_info;
+			op_info.name = Variant::get_type_name(i) + "[%s]";
+			op_info.return_type = Variant::get_indexed_element_type(Variant::Type(i));
+			op_info.argument_type = Variant::INT;
 
-			method_list.push_back(mi);
+			operator_list.push_back(op_info);
+		}
+
+		for (const OperatorInfo &op_info : operator_list) {
+			DocData::OperatorDoc operator_doc;
+
+			operator_doc.name = op_info.name;
+
+			// Get return value type.
+			if (op_info.return_type == Variant::NIL) {
+				if (op_info.return_type_is_variant) {
+					operator_doc.return_type = "Variant";
+				} else {
+					operator_doc.return_type = "void";
+				}
+			} else {
+				operator_doc.return_type = Variant::get_type_name(op_info.return_type);
+			}
+
+			// Get argument type.
+			if (op_info.argument_type != Variant::NIL || op_info.argument_type_is_variant == true) {
+				if (op_info.argument_type_is_variant == true) {
+					operator_doc.argument.type = "Variant";
+				} else {
+					operator_doc.argument.type = Variant::get_type_name(op_info.return_type);
+				}
+			}
+
+			c.operators.push_back(operator_doc);
 		}
 
 		for (const MethodInfo &mi : method_list) {
@@ -796,8 +790,6 @@ void DocTools::generate(bool p_basic_types) {
 
 			if (method.name == cname) {
 				c.constructors.push_back(method);
-			} else if (method.name.begins_with("operator")) {
-				c.operators.push_back(method);
 			} else {
 				c.methods.push_back(method);
 			}
@@ -827,7 +819,7 @@ void DocTools::generate(bool p_basic_types) {
 		}
 	}
 
-	//built in constants and functions
+	// Built-in constants and functions.
 
 	{
 		String cname = "@GlobalScope";
@@ -1157,8 +1149,28 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 					Error err2 = _parse_methods(parser, c.methods);
 					ERR_FAIL_COND_V(err2, err2);
 				} else if (name2 == "operators") {
-					Error err2 = _parse_methods(parser, c.operators);
-					ERR_FAIL_COND_V(err2, err2);
+					while (parser->read() == OK) {
+						if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
+							String name3 = parser->get_node_name();
+
+							if (name3 == "operator") {
+								DocData::OperatorDoc op;
+
+								ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
+								op.name = parser->get_attribute_value("name");
+								ERR_FAIL_COND_V(!parser->has_attribute("return_type"), ERR_FILE_CORRUPT);
+								op.return_type = parser->get_attribute_value("return_type");
+								if (parser->has_attribute("argument_type")) {
+									op.argument.type = parser->get_attribute_value("argument_type");
+								}
+								c.operators.push_back(op);
+							} else {
+								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
+							}
+						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "operators") {
+							break; // End of <operators>.
+						}
+					}
 				} else if (name2 == "signals") {
 					Error err2 = _parse_methods(parser, c.signals);
 					ERR_FAIL_COND_V(err2, err2);
@@ -1462,7 +1474,25 @@ Error DocTools::save_classes(const String &p_default_path, const Map<String, Str
 			_write_string(f, 1, "</theme_items>");
 		}
 
-		_write_method_doc(f, "operator", c.operators);
+		if (!c.operators.is_empty()) {
+			_write_string(f, 1, "<operators>");
+
+			c.operators.sort();
+
+			for (int i = 0; i < c.operators.size(); i++) {
+				const DocData::OperatorDoc &op = c.operators[i];
+
+				String argument_type_string;
+				if (!op.argument.type.is_empty()) {
+					argument_type_string = " argument_type=\"" + op.argument.type "\"";
+				}
+
+				_write_string(f, 2, "<operator name=\"" + op.name + "\" return_type=\"" + op.return_type + "\"" + argument_type_string + ">");
+				_write_string(f, 3, _translate_doc_string(op.description).strip_edges().xml_escape());
+				_write_string(f, 2, "</operator>");
+			}
+			_write_string(f, 1, "<operators>");
+		}
 
 		_write_string(f, 0, "</class>");
 	}

@@ -242,6 +242,14 @@ struct MethodInfo {
 // API used to extend in GDNative and other C compatible compiled languages.
 class MethodBind;
 
+struct OperatorInfo {
+	String name;
+	Variant::Type return_type = Variant::NIL;
+	Variant::Type argument_type = Variant::NIL;
+	bool return_type_is_variant = false;
+	bool argument_type_is_variant = false;
+};
+
 struct ObjectNativeExtension {
 	ObjectNativeExtension *parent = nullptr;
 	List<ObjectNativeExtension *> children;
