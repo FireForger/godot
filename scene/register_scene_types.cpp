@@ -816,6 +816,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CurveXYZTexture);
 	GDREGISTER_CLASS(GradientTexture1D);
 	GDREGISTER_CLASS(GradientTexture2D);
+	GDREGISTER_CLASS(NinePatchTexture);
 	GDREGISTER_CLASS(ProxyTexture);
 	GDREGISTER_CLASS(AnimatedTexture);
 	GDREGISTER_CLASS(CameraTexture);
@@ -901,6 +902,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("ToolButton", "Button");
 	ClassDB::add_compatibility_class("Navigation3D", "Node3D");
 	ClassDB::add_compatibility_class("Navigation2D", "Node2D");
+	//ClassDB::add_compatibility_class("NinePatchRect", "TextureRect");
 	ClassDB::add_compatibility_class("YSort", "Node2D");
 	ClassDB::add_compatibility_class("GIProbe", "VoxelGI");
 	ClassDB::add_compatibility_class("GIProbeData", "VoxelGIData");

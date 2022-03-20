@@ -809,6 +809,65 @@ public:
 VARIANT_ENUM_CAST(GradientTexture2D::Fill);
 VARIANT_ENUM_CAST(GradientTexture2D::Repeat);
 
+class NinePatchTexture : public Texture2D {
+	GDCLASS(NinePatchTexture, Texture2D);
+
+public:
+	enum AxisStretchMode {
+		AXIS_STRETCH_MODE_STRETCH,
+		AXIS_STRETCH_MODE_TILE,
+		AXIS_STRETCH_MODE_TILE_FIT,
+	};
+
+	RID nine_patch_texture;
+
+	bool draw_center = true;
+	int margin[4] = {};
+	Rect2 region_rect;
+	Ref<Texture2D> texture;
+
+	AxisStretchMode axis_h = AXIS_STRETCH_MODE_STRETCH;
+	AxisStretchMode axis_v = AXIS_STRETCH_MODE_STRETCH;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual int get_width() const override;
+	virtual int get_height() const override;
+	virtual RID get_rid() const override;
+	virtual bool has_alpha() const override { return true; }
+
+	virtual Ref<Image> get_image() const override;
+
+	void set_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture() const;
+
+	void set_patch_margin(Side p_side, int p_size);
+	int get_patch_margin(Side p_side) const;
+
+	void set_region_rect(const Rect2 &p_region_rect);
+	Rect2 get_region_rect() const;
+
+	void set_draw_center(bool p_enabled);
+	bool is_draw_center_enabled() const;
+
+	void set_h_axis_stretch_mode(AxisStretchMode p_mode);
+	AxisStretchMode get_h_axis_stretch_mode() const;
+
+	void set_v_axis_stretch_mode(AxisStretchMode p_mode);
+	AxisStretchMode get_v_axis_stretch_mode() const;
+
+	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
+	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
+	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const override;
+	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const override;
+
+	NinePatchTexture() {}
+};
+
+VARIANT_ENUM_CAST(NinePatchTexture::AxisStretchMode);
+
 class ProxyTexture : public Texture2D {
 	GDCLASS(ProxyTexture, Texture2D);
 

@@ -67,8 +67,8 @@ void TextureRegionEditor::_region_draw() {
 		base_tex = node_sprite_2d->get_texture();
 	} else if (node_sprite_3d) {
 		base_tex = node_sprite_3d->get_texture();
-	} else if (node_ninepatch) {
-		base_tex = node_ninepatch->get_texture();
+	} else if (nine_patch_tex.is_valid()) {
+		base_tex = nine_patch_tex->get_texture();
 	} else if (obj_styleBox.is_valid()) {
 		base_tex = obj_styleBox->get_texture();
 	}
@@ -233,13 +233,13 @@ void TextureRegionEditor::_region_draw() {
 
 	updating_scroll = false;
 
-	if (node_ninepatch || obj_styleBox.is_valid()) {
+	if (nine_patch_tex.is_valid() || obj_styleBox.is_valid()) {
 		float margins[4] = { 0 };
-		if (node_ninepatch) {
-			margins[0] = node_ninepatch->get_patch_margin(SIDE_TOP);
-			margins[1] = node_ninepatch->get_patch_margin(SIDE_BOTTOM);
-			margins[2] = node_ninepatch->get_patch_margin(SIDE_LEFT);
-			margins[3] = node_ninepatch->get_patch_margin(SIDE_RIGHT);
+		if (nine_patch_tex->is_valid()) {
+			margins[0] = nine_patch_tex->get_patch_margin(SIDE_TOP);
+			margins[1] = nine_patch_tex->get_patch_margin(SIDE_BOTTOM);
+			margins[2] = nine_patch_tex->get_patch_margin(SIDE_LEFT);
+			margins[3] = nine_patch_tex->get_patch_margin(SIDE_RIGHT);
 		} else if (obj_styleBox.is_valid()) {
 			margins[0] = obj_styleBox->get_margin_size(SIDE_TOP);
 			margins[1] = obj_styleBox->get_margin_size(SIDE_BOTTOM);
@@ -289,14 +289,14 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed() && !panner->is_panning()) {
-				if (node_ninepatch || obj_styleBox.is_valid()) {
+				if (nine_patch_tex.is_valid() || obj_styleBox.is_valid()) {
 					edited_margin = -1;
 					float margins[4] = { 0 };
-					if (node_ninepatch) {
-						margins[0] = node_ninepatch->get_patch_margin(SIDE_TOP);
-						margins[1] = node_ninepatch->get_patch_margin(SIDE_BOTTOM);
-						margins[2] = node_ninepatch->get_patch_margin(SIDE_LEFT);
-						margins[3] = node_ninepatch->get_patch_margin(SIDE_RIGHT);
+					if (nine_patch_tex.is_valid()) {
+						margins[0] = nine_patch_tex->get_patch_margin(SIDE_TOP);
+						margins[1] = nine_patch_tex->get_patch_margin(SIDE_BOTTOM);
+						margins[2] = nine_patch_tex->get_patch_margin(SIDE_LEFT);
+						margins[3] = nine_patch_tex->get_patch_margin(SIDE_RIGHT);
 					} else if (obj_styleBox.is_valid()) {
 						margins[0] = obj_styleBox->get_margin_size(SIDE_TOP);
 						margins[1] = obj_styleBox->get_margin_size(SIDE_BOTTOM);
@@ -341,8 +341,8 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 									r = node_sprite_2d->get_region_rect();
 								} else if (node_sprite_3d) {
 									r = node_sprite_3d->get_region_rect();
-								} else if (node_ninepatch) {
-									r = node_ninepatch->get_region_rect();
+								} else if (nine_patch_tex.is_valid()) {
+									r = nine_patch_tex->get_region_rect();
 								} else if (obj_styleBox.is_valid()) {
 									r = obj_styleBox->get_region_rect();
 								}
@@ -359,9 +359,9 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 							} else if (node_sprite_3d) {
 								undo_redo->add_do_method(node_sprite_3d, "set_region_rect", rect);
 								undo_redo->add_undo_method(node_sprite_3d, "set_region_rect", node_sprite_3d->get_region_rect());
-							} else if (node_ninepatch) {
-								undo_redo->add_do_method(node_ninepatch, "set_region_rect", rect);
-								undo_redo->add_undo_method(node_ninepatch, "set_region_rect", node_ninepatch->get_region_rect());
+							} else if (nine_patch_tex.is_valid()) {
+								undo_redo->add_do_method(nine_patch_tex.ptr(), "set_region_rect", rect);
+								undo_redo->add_undo_method(nine_patch_tex.ptr(), "set_region_rect", nine_patch_tex->get_region_rect());
 							} else if (obj_styleBox.is_valid()) {
 								undo_redo->add_do_method(obj_styleBox.ptr(), "set_region_rect", rect);
 								undo_redo->add_undo_method(obj_styleBox.ptr(), "set_region_rect", obj_styleBox->get_region_rect());
@@ -388,8 +388,8 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 						rect_prev = node_sprite_2d->get_region_rect();
 					} else if (node_sprite_3d) {
 						rect_prev = node_sprite_3d->get_region_rect();
-					} else if (node_ninepatch) {
-						rect_prev = node_ninepatch->get_region_rect();
+					} else if (nine_patch_tex.is_valid()) {
+						rect_prev = nine_patch_tex->get_region_rect();
 					} else if (obj_styleBox.is_valid()) {
 						rect_prev = obj_styleBox->get_region_rect();
 					}
@@ -411,9 +411,9 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 				if (edited_margin >= 0) {
 					undo_redo->create_action(TTR("Set Margin"));
 					static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
-					if (node_ninepatch) {
-						undo_redo->add_do_method(node_ninepatch, "set_patch_margin", side[edited_margin], node_ninepatch->get_patch_margin(side[edited_margin]));
-						undo_redo->add_undo_method(node_ninepatch, "set_patch_margin", side[edited_margin], prev_margin);
+					if (nine_patch_tex.is_valid()) {
+						undo_redo->add_do_method(nine_patch_tex.ptr(), "set_patch_margin", side[edited_margin], nine_patch_tex->get_patch_margin(side[edited_margin]));
+						undo_redo->add_undo_method(nine_patch_tex.ptr(), "set_patch_margin", side[edited_margin], prev_margin);
 					} else if (obj_styleBox.is_valid()) {
 						undo_redo->add_do_method(obj_styleBox.ptr(), "set_margin_size", side[edited_margin], obj_styleBox->get_margin_size(side[edited_margin]));
 						undo_redo->add_undo_method(obj_styleBox.ptr(), "set_margin_size", side[edited_margin], prev_margin);
@@ -431,9 +431,9 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					} else if (node_sprite_3d) {
 						undo_redo->add_do_method(node_sprite_3d, "set_region_rect", node_sprite_3d->get_region_rect());
 						undo_redo->add_undo_method(node_sprite_3d, "set_region_rect", rect_prev);
-					} else if (node_ninepatch) {
-						undo_redo->add_do_method(node_ninepatch, "set_region_rect", node_ninepatch->get_region_rect());
-						undo_redo->add_undo_method(node_ninepatch, "set_region_rect", rect_prev);
+					} else if (nine_patch_tex.is_valid()) {
+						undo_redo->add_do_method(nine_patch_tex.ptr(), "set_region_rect", nine_patch_tex->get_region_rect());
+						undo_redo->add_undo_method(nine_patch_tex.ptr(), "set_region_rect", rect_prev);
 					} else if (obj_styleBox.is_valid()) {
 						undo_redo->add_do_method(obj_styleBox.ptr(), "set_region_rect", obj_styleBox->get_region_rect());
 						undo_redo->add_undo_method(obj_styleBox.ptr(), "set_region_rect", rect_prev);
@@ -454,8 +454,8 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 				drag = false;
 				if (edited_margin >= 0) {
 					static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
-					if (node_ninepatch) {
-						node_ninepatch->set_patch_margin(side[edited_margin], prev_margin);
+					if (nine_patch_tex.is_valid()) {
+						nine_patch_tex->set_patch_margin(side[edited_margin], prev_margin);
 					}
 					if (obj_styleBox.is_valid()) {
 						obj_styleBox->set_margin_size(side[edited_margin], prev_margin);
@@ -515,8 +515,8 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					new_margin = 0;
 				}
 				static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
-				if (node_ninepatch) {
-					node_ninepatch->set_patch_margin(side[edited_margin], new_margin);
+				if (nine_patch_tex.is_valid()) {
+					nine_patch_tex->set_patch_margin(side[edited_margin], new_margin);
 				}
 				if (obj_styleBox.is_valid()) {
 					obj_styleBox->set_margin_size(side[edited_margin], new_margin);
@@ -711,8 +711,8 @@ void TextureRegionEditor::apply_rect(const Rect2 &p_rect) {
 		node_sprite_2d->set_region_rect(p_rect);
 	} else if (node_sprite_3d) {
 		node_sprite_3d->set_region_rect(p_rect);
-	} else if (node_ninepatch) {
-		node_ninepatch->set_region_rect(p_rect);
+	} else if (nine_patch_tex.is_valid()) {
+		nine_patch_tex->set_region_rect(p_rect);
 	} else if (obj_styleBox.is_valid()) {
 		obj_styleBox->set_region_rect(p_rect);
 	}
@@ -725,10 +725,10 @@ void TextureRegionEditor::_update_rect() {
 		rect = node_sprite_2d->get_region_rect();
 	} else if (node_sprite_3d) {
 		rect = node_sprite_3d->get_region_rect();
-	} else if (node_ninepatch) {
-		rect = node_ninepatch->get_region_rect();
+	} else if (nine_patch_tex.is_valid()) {
+		rect = nine_patch_tex->get_region_rect();
 		if (rect == Rect2()) {
-			rect = Rect2(Vector2(), node_ninepatch->get_texture()->get_size());
+			rect = Rect2(Vector2(), nine_patch_tex->get_size());
 		}
 	} else if (obj_styleBox.is_valid()) {
 		rect = obj_styleBox->get_region_rect();
@@ -746,8 +746,8 @@ void TextureRegionEditor::_update_autoslice() {
 		texture = node_sprite_2d->get_texture();
 	} else if (node_sprite_3d) {
 		texture = node_sprite_3d->get_texture();
-	} else if (node_ninepatch) {
-		texture = node_ninepatch->get_texture();
+	} else if (nine_patch_tex.is_valid()) {
+		texture = nine_patch_tex->get_texture();
 	} else if (obj_styleBox.is_valid()) {
 		texture = obj_styleBox->get_texture();
 	}
@@ -839,10 +839,10 @@ void TextureRegionEditor::_notification(int p_what) {
 }
 
 void TextureRegionEditor::_node_removed(Object *p_obj) {
-	if (p_obj == node_sprite_2d || p_obj == node_sprite_3d || p_obj == node_ninepatch || p_obj == obj_styleBox.ptr() || p_obj == atlas_tex.ptr()) {
+	if (p_obj == node_sprite_2d || p_obj == node_sprite_3d || p_obj == nine_patch_tex.ptr() || p_obj == obj_styleBox.ptr() || p_obj == atlas_tex.ptr()) {
 		node_sprite_2d = nullptr;
 		node_sprite_3d = nullptr;
-		node_ninepatch = nullptr;
+		nine_patch_tex = Ref<NinePatchTexture>(nullptr);
 		obj_styleBox = Ref<StyleBox>(nullptr);
 		atlas_tex = Ref<AtlasTexture>(nullptr);
 		hide();
@@ -865,7 +865,7 @@ bool TextureRegionEditor::is_atlas_texture() {
 }
 
 bool TextureRegionEditor::is_ninepatch() {
-	return node_ninepatch != nullptr;
+	return nine_patch_tex.is_valid();
 }
 
 Sprite2D *TextureRegionEditor::get_sprite_2d() {
@@ -883,8 +883,8 @@ void TextureRegionEditor::edit(Object *p_obj) {
 	if (node_sprite_3d) {
 		node_sprite_3d->disconnect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
-	if (node_ninepatch) {
-		node_ninepatch->disconnect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+	if (nine_patch_tex.is_valid()) {
+		nine_patch_tex->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (obj_styleBox.is_valid()) {
 		obj_styleBox->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
@@ -895,14 +895,15 @@ void TextureRegionEditor::edit(Object *p_obj) {
 	if (p_obj) {
 		node_sprite_2d = Object::cast_to<Sprite2D>(p_obj);
 		node_sprite_3d = Object::cast_to<Sprite3D>(p_obj);
-		node_ninepatch = Object::cast_to<NinePatchRect>(p_obj);
 
 		bool is_resource = false;
 		if (Object::cast_to<StyleBoxTexture>(p_obj)) {
 			obj_styleBox = Ref<StyleBoxTexture>(Object::cast_to<StyleBoxTexture>(p_obj));
 			is_resource = true;
-		}
-		if (Object::cast_to<AtlasTexture>(p_obj)) {
+		} else if (Object::cast_to<NinePatchTexture>(p_obj)) {
+			nine_patch_tex = Ref<NinePatchTexture>(Object::cast_to<NinePatchTexture>(p_obj));
+			is_resource = true;
+		} else if (Object::cast_to<AtlasTexture>(p_obj)) {
 			atlas_tex = Ref<AtlasTexture>(Object::cast_to<AtlasTexture>(p_obj));
 			is_resource = true;
 		}
@@ -916,7 +917,7 @@ void TextureRegionEditor::edit(Object *p_obj) {
 	} else {
 		node_sprite_2d = nullptr;
 		node_sprite_3d = nullptr;
-		node_ninepatch = nullptr;
+		nine_patch_tex = Ref<NinePatchTexture>(nullptr);
 		obj_styleBox = Ref<StyleBoxTexture>(nullptr);
 		atlas_tex = Ref<AtlasTexture>(nullptr);
 	}
@@ -944,8 +945,8 @@ void TextureRegionEditor::_edit_region() {
 		texture = node_sprite_2d->get_texture();
 	} else if (node_sprite_3d) {
 		texture = node_sprite_3d->get_texture();
-	} else if (node_ninepatch) {
-		texture = node_ninepatch->get_texture();
+	} else if (nine_patch_tex.is_valid()) {
+		texture = nine_patch_tex->get_texture();
 	} else if (obj_styleBox.is_valid()) {
 		texture = obj_styleBox->get_texture();
 	}
@@ -985,7 +986,7 @@ Vector2 TextureRegionEditor::snap_point(Vector2 p_target) const {
 TextureRegionEditor::TextureRegionEditor() {
 	node_sprite_2d = nullptr;
 	node_sprite_3d = nullptr;
-	node_ninepatch = nullptr;
+	nine_patch_tex = Ref<NinePatchTexture>(nullptr);
 	obj_styleBox = Ref<StyleBoxTexture>(nullptr);
 	atlas_tex = Ref<AtlasTexture>(nullptr);
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
@@ -1132,7 +1133,7 @@ void TextureRegionEditorPlugin::edit(Object *p_object) {
 }
 
 bool TextureRegionEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Sprite2D") || p_object->is_class("Sprite3D") || p_object->is_class("NinePatchRect") || p_object->is_class("StyleBoxTexture") || p_object->is_class("AtlasTexture");
+	return p_object->is_class("Sprite2D") || p_object->is_class("Sprite3D") || p_object->is_class("NinePatchTexture") || p_object->is_class("StyleBoxTexture") || p_object->is_class("AtlasTexture");
 }
 
 void TextureRegionEditorPlugin::_editor_visiblity_changed() {

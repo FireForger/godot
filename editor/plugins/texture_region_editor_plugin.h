@@ -81,8 +81,8 @@ class TextureRegionEditor : public VBoxContainer {
 
 	Sprite2D *node_sprite_2d;
 	Sprite3D *node_sprite_3d;
-	NinePatchRect *node_ninepatch;
 	Ref<StyleBoxTexture> obj_styleBox;
+	Ref<NinePatchTexture> *nine_patch_tex;
 	Ref<AtlasTexture> atlas_tex;
 
 	Rect2 rect;

@@ -2232,6 +2232,180 @@ void GradientTexture2D::_bind_methods() {
 
 //////////////////////////////////////
 
+int NinePatchTexture::get_width() const {
+	if (texture.is_valid()) {
+		return texture->get_width();
+	}
+	return 1;
+}
+
+int NinePatchTexture::get_height() const {
+	if (texture.is_valid()) {
+		return texture->get_height();
+	}
+	return 1;
+}
+
+RID NinePatchTexture::get_rid() const {
+	if (texture.is_valid()) {
+		return texture->get_rid();
+	}
+	return RID();
+}
+
+Ref<Image> NinePatchTexture::get_image() const {
+	if (!texture.is_valid() || !texture->get_image().is_valid()) {
+		return Ref<Image>();
+	} else if (region_rect == Rect2()) {
+		return texture->get_image();
+	} else {
+		return texture->get_image()->get_rect(region_rect);
+	}
+}
+
+void NinePatchTexture::set_texture(const Ref<Texture2D> &p_texture) {
+	ERR_FAIL_COND_MSG(Object::cast_to<NinePatchTexture>(p_texture.ptr()) != nullptr, "Can't self-assign a NinePatchTexture");
+	if (texture == p_texture) {
+		return;
+	}
+	texture = p_texture;
+	emit_changed();
+}
+
+Ref<Texture2D> NinePatchTexture::get_texture() const {
+	return texture;
+}
+
+void NinePatchTexture::set_patch_margin(Side p_side, int p_size) {
+	ERR_FAIL_INDEX((int)p_side, 4);
+	margin[p_side] = p_size;
+	emit_changed();
+}
+
+int NinePatchTexture::get_patch_margin(Side p_side) const {
+	ERR_FAIL_INDEX_V((int)p_side, 4, 0);
+	return margin[p_side];
+}
+
+void NinePatchTexture::set_region_rect(const Rect2 &p_region_rect) {
+	if (region_rect == p_region_rect) {
+		return;
+	}
+
+	region_rect = p_region_rect;
+	emit_changed();
+}
+
+Rect2 NinePatchTexture::get_region_rect() const {
+	return region_rect;
+}
+
+void NinePatchTexture::set_draw_center(bool p_draw_center) {
+	draw_center = p_draw_center;
+	emit_changed();
+}
+
+bool NinePatchTexture::is_draw_center_enabled() const {
+	return draw_center;
+}
+
+void NinePatchTexture::set_h_axis_stretch_mode(AxisStretchMode p_mode) {
+	axis_h = p_mode;
+	emit_changed();
+}
+
+NinePatchTexture::AxisStretchMode NinePatchTexture::get_h_axis_stretch_mode() const {
+	return axis_h;
+}
+
+void NinePatchTexture::set_v_axis_stretch_mode(AxisStretchMode p_mode) {
+	axis_v = p_mode;
+	emit_changed();
+}
+
+NinePatchTexture::AxisStretchMode NinePatchTexture::get_v_axis_stretch_mode() const {
+	return axis_v;
+}
+
+void NinePatchTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
+	if (!texture.is_valid()) {
+		return;
+	}
+
+	Rect2 rect;
+	Rect2 src_rect;
+	texture->get_rect_region(Rect2(p_pos, get_size()), region_rect, rect, src_rect);
+
+	RenderingServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, get_rid(), Vector2(margin[SIDE_LEFT], margin[SIDE_TOP]), Vector2(margin[SIDE_RIGHT], margin[SIDE_BOTTOM]), RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center, p_modulate);
+}
+
+void NinePatchTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
+	if (!texture.is_valid()) {
+		return;
+	}
+
+	Rect2 rect;
+	Rect2 src_rect;
+	texture->get_rect_region(p_rect, region_rect, rect, src_rect);
+
+	RenderingServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, get_rid(), Vector2(margin[SIDE_LEFT], margin[SIDE_TOP]), Vector2(margin[SIDE_RIGHT], margin[SIDE_BOTTOM]), RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center, p_modulate);
+}
+
+void NinePatchTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) const {
+	if (!texture.is_valid()) {
+		return;
+	}
+
+	Rect2 rect;
+	Rect2 src_rect;
+	texture->get_rect_region(p_rect, p_src_rect, rect, src_rect);
+
+	RenderingServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, get_rid(), Vector2(margin[SIDE_LEFT], margin[SIDE_TOP]), Vector2(margin[SIDE_RIGHT], margin[SIDE_BOTTOM]), RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center, p_modulate);
+}
+
+bool NinePatchTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
+	if (texture.is_valid()) {
+		return texture->get_rect_region(p_rect, p_src_rect, r_rect, r_src_rect);
+	}
+	r_rect = p_rect;
+	r_src_rect = p_src_rect;
+	return true;
+}
+
+void NinePatchTexture::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &NinePatchTexture::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"), &NinePatchTexture::get_texture);
+	ClassDB::bind_method(D_METHOD("set_patch_margin", "margin", "value"), &NinePatchTexture::set_patch_margin);
+	ClassDB::bind_method(D_METHOD("get_patch_margin", "margin"), &NinePatchTexture::get_patch_margin);
+	ClassDB::bind_method(D_METHOD("set_region_rect", "rect"), &NinePatchTexture::set_region_rect);
+	ClassDB::bind_method(D_METHOD("get_region_rect"), &NinePatchTexture::get_region_rect);
+	ClassDB::bind_method(D_METHOD("set_draw_center", "draw_center"), &NinePatchTexture::set_draw_center);
+	ClassDB::bind_method(D_METHOD("is_draw_center_enabled"), &NinePatchTexture::is_draw_center_enabled);
+	ClassDB::bind_method(D_METHOD("set_h_axis_stretch_mode", "mode"), &NinePatchTexture::set_h_axis_stretch_mode);
+	ClassDB::bind_method(D_METHOD("get_h_axis_stretch_mode"), &NinePatchTexture::get_h_axis_stretch_mode);
+	ClassDB::bind_method(D_METHOD("set_v_axis_stretch_mode", "mode"), &NinePatchTexture::set_v_axis_stretch_mode);
+	ClassDB::bind_method(D_METHOD("get_v_axis_stretch_mode"), &NinePatchTexture::get_v_axis_stretch_mode);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "is_draw_center_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
+
+	ADD_GROUP("Patch Margin", "patch_margin_");
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "patch_margin_left", PROPERTY_HINT_RANGE, "0,16384,1"), "set_patch_margin", "get_patch_margin", SIDE_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "patch_margin_top", PROPERTY_HINT_RANGE, "0,16384,1"), "set_patch_margin", "get_patch_margin", SIDE_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "patch_margin_right", PROPERTY_HINT_RANGE, "0,16384,1"), "set_patch_margin", "get_patch_margin", SIDE_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "patch_margin_bottom", PROPERTY_HINT_RANGE, "0,16384,1"), "set_patch_margin", "get_patch_margin", SIDE_BOTTOM);
+	ADD_GROUP("Axis Stretch", "axis_stretch_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis_stretch_horizontal", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_h_axis_stretch_mode", "get_h_axis_stretch_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis_stretch_vertical", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_v_axis_stretch_mode", "get_v_axis_stretch_mode");
+
+	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_STRETCH);
+	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_TILE);
+	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_TILE_FIT);
+}
+
+//////////////////////////////////////
+
 void ProxyTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_base", "base"), &ProxyTexture::set_base);
 	ClassDB::bind_method(D_METHOD("get_base"), &ProxyTexture::get_base);
