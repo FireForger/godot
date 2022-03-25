@@ -119,6 +119,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["hipass"] = "High-pass";
 	capitalize_string_remaps["hsv"] = "HSV";
 	capitalize_string_remaps["http"] = "HTTP";
+	capitalize_string_remaps["hl"] = "HL";
 	capitalize_string_remaps["id"] = "ID";
 	capitalize_string_remaps["igd"] = "IGD";
 	capitalize_string_remaps["ik"] = "IK";
@@ -143,11 +144,12 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	// Not used for now as AudioEffectReverb has a `msec` property.
 	//capitalize_string_remaps["msec"] = "(msec)"; // Unit.
 	capitalize_string_remaps["msaa"] = "MSAA";
-	capitalize_string_remaps["normalmap"] = "Normal Map";
+	capitalize_string_remaps["normalmap"] = "NormalMap";
 	capitalize_string_remaps["ok"] = "OK";
 	capitalize_string_remaps["opengl"] = "OpenGL";
 	capitalize_string_remaps["opentype"] = "OpenType";
 	capitalize_string_remaps["openxr"] = "OpenXR";
+	capitalize_string_remaps["orm"] = "ORM";
 	capitalize_string_remaps["pck"] = "PCK";
 	capitalize_string_remaps["png"] = "PNG";
 	capitalize_string_remaps["po2"] = "(Power of 2)"; // Unit.

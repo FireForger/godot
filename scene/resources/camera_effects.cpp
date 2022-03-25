@@ -173,7 +173,7 @@ void CameraEffects::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_dof_blur_amount", "amount"), &CameraEffects::set_dof_blur_amount);
 	ClassDB::bind_method(D_METHOD("get_dof_blur_amount"), &CameraEffects::get_dof_blur_amount);
 
-	ADD_GROUP("DOF Blur", "dof_blur_");
+	ADD_GROUP("dof Blur", "dof_blur_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dof_blur_far_enabled"), "set_dof_blur_far_enabled", "is_dof_blur_far_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_far_distance", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp"), "set_dof_blur_far_distance", "get_dof_blur_far_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dof_blur_far_transition", PROPERTY_HINT_RANGE, "0.01,8192,0.01,exp"), "set_dof_blur_far_transition", "get_dof_blur_far_transition");

@@ -60,7 +60,7 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_play_area_mode", "mode"), &XRInterface::set_play_area_mode);
 	ClassDB::bind_method(D_METHOD("get_play_area"), &XRInterface::get_play_area);
 
-	ADD_GROUP("XR", "xr_");
+	ADD_GROUP("xr", "xr_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "xr_play_area_mode", PROPERTY_HINT_ENUM, "Unknown,3DOF,Sitting,Roomscale,Stage"), "set_play_area_mode", "get_play_area_mode");
 
 	// methods and properties specific to AR....
@@ -68,7 +68,7 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_anchor_detection_is_enabled", "enable"), &XRInterface::set_anchor_detection_is_enabled);
 	ClassDB::bind_method(D_METHOD("get_camera_feed_id"), &XRInterface::get_camera_feed_id);
 
-	ADD_GROUP("AR", "ar_");
+	ADD_GROUP("ar", "ar_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ar_is_anchor_detection_enabled"), "set_anchor_detection_is_enabled", "get_anchor_detection_is_enabled");
 
 	BIND_ENUM_CONSTANT(XR_NONE);
