@@ -7040,11 +7040,11 @@ Vector<int> Node3DEditor::get_subgizmo_selection() {
 }
 
 void Node3DEditor::add_control_to_menu_panel(Control *p_control) {
-	hbc_context_menu->add_child(p_control);
+	hfc_context_menu->add_child(p_control);
 }
 
 void Node3DEditor::remove_control_from_menu_panel(Control *p_control) {
-	hbc_context_menu->remove_child(p_control);
+	hfc_context_menu->remove_child(p_control);
 }
 
 void Node3DEditor::set_can_preview(Camera3D *p_preview) {
@@ -7706,8 +7706,9 @@ Node3DEditor::Node3DEditor() {
 	hbc_menu->add_child(memnew(VSeparator));
 
 	context_menu_container = memnew(PanelContainer);
-	hbc_context_menu = memnew(HBoxContainer);
-	context_menu_container->add_child(hbc_context_menu);
+	hfc_context_menu = memnew(HFlowContainer);
+	hfc_context_menu->set_h_size_flags(SIZE_EXPAND_FILL);
+	context_menu_container->add_child(hfc_context_menu);
 	// Use a custom stylebox to make contextual menu items stand out from the rest.
 	// This helps with editor usability as contextual menu items change when selecting nodes,
 	// even though it may not be immediately obvious at first.

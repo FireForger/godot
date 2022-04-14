@@ -40,6 +40,7 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
@@ -666,7 +667,7 @@ private:
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
 	PanelContainer *context_menu_container = nullptr;
-	HBoxContainer *hbc_context_menu = nullptr;
+	HFlowContainer *hfc_context_menu = nullptr;
 
 	void _generate_selection_boxes();
 	UndoRedo *undo_redo = nullptr;

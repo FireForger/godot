@@ -4850,11 +4850,11 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {
 	ERR_FAIL_COND(!p_control);
 
-	hbc_context_menu->add_child(p_control);
+	hfc_context_menu->add_child(p_control);
 }
 
 void CanvasItemEditor::remove_control_from_menu_panel(Control *p_control) {
-	hbc_context_menu->remove_child(p_control);
+	hfc_context_menu->remove_child(p_control);
 }
 
 void CanvasItemEditor::add_control_to_left_panel(Control *p_control) {
@@ -5207,8 +5207,9 @@ CanvasItemEditor::CanvasItemEditor() {
 	hb->add_child(memnew(VSeparator));
 
 	context_menu_container = memnew(PanelContainer);
-	hbc_context_menu = memnew(HBoxContainer);
-	context_menu_container->add_child(hbc_context_menu);
+	hfc_context_menu = memnew(HFlowContainer);
+	hfc_context_menu->set_h_size_flags(SIZE_EXPAND_FILL);
+	context_menu_container->add_child(hfc_context_menu);
 	// Use a custom stylebox to make contextual menu items stand out from the rest.
 	// This helps with editor usability as contextual menu items change when selecting nodes,
 	// even though it may not be immediately obvious at first.
@@ -5217,7 +5218,7 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	// Animation controls.
 	animation_hb = memnew(HBoxContainer);
-	hbc_context_menu->add_child(animation_hb);
+	hfc_context_menu->add_child(animation_hb);
 	animation_hb->add_child(memnew(VSeparator));
 	animation_hb->hide();
 
