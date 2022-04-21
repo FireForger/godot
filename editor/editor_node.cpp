@@ -2673,7 +2673,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 
 			file_export_lib->popup_file_dialog();
-			file_export_lib->set_title(TTR("Export Mesh Library"));
+			file_export_lib->set_title(TTR("Export MeshLibrary"));
 
 		} break;
 
@@ -6921,19 +6921,24 @@ EditorNode::EditorNode() {
 	file->set_current_dir("res://");
 
 	file_export_lib = memnew(EditorFileDialog);
-	file_export_lib->set_title(TTR("Export Library"));
 	file_export_lib->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_export_lib->connect("file_selected", callable_mp(this, &EditorNode::_dialog_action));
+
+	HBoxContainer *file_export_lib_hbox = memnew(HBoxContainer);
+	file_export_lib_hbox->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+	file_export_lib_hbox->add_theme_constant_override("separation", 20);
+	file_export_lib->get_vbox()->add_child(file_export_lib_hbox);
+
 	file_export_lib_merge = memnew(CheckBox);
 	file_export_lib_merge->set_text(TTR("Merge With Existing"));
-	file_export_lib_merge->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	file_export_lib_merge->set_pressed(true);
-	file_export_lib->get_vbox()->add_child(file_export_lib_merge);
+	file_export_lib_hbox->add_child(file_export_lib_merge);
+
 	file_export_lib_apply_xforms = memnew(CheckBox);
 	file_export_lib_apply_xforms->set_text(TTR("Apply MeshInstance Transforms"));
-	file_export_lib_apply_xforms->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	file_export_lib_apply_xforms->set_pressed(false);
-	file_export_lib->get_vbox()->add_child(file_export_lib_apply_xforms);
+	file_export_lib_hbox->add_child(file_export_lib_apply_xforms);
+
 	gui_base->add_child(file_export_lib);
 
 	file_script = memnew(EditorFileDialog);
