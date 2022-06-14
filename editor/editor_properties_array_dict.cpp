@@ -683,7 +683,7 @@ EditorPropertyArray::EditorPropertyArray() {
 
 	edit = memnew(Button);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	edit->set_clip_text(true);
+	edit->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
 	edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_edit_pressed));
 	edit->set_toggle_mode(true);
 	edit->set_drag_forwarding(this);
@@ -1190,7 +1190,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 
 	edit = memnew(Button);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	edit->set_clip_text(true);
+	edit->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
 	edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_edit_pressed));
 	edit->set_toggle_mode(true);
 	add_child(edit);
@@ -1416,7 +1416,7 @@ EditorPropertyLocalizableString::EditorPropertyLocalizableString() {
 
 	edit = memnew(Button);
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	edit->set_clip_text(true);
+	edit->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
 	edit->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_edit_pressed));
 	edit->set_toggle_mode(true);
 	add_child(edit);

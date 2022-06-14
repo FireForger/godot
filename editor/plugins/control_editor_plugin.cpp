@@ -207,7 +207,7 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 
 EditorPropertyAnchorsPreset::EditorPropertyAnchorsPreset() {
 	options = memnew(OptionButton);
-	options->set_clip_text(true);
+	options->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
 	options->set_flat(true);
 	add_child(options);
 	add_focusable(options);
@@ -347,7 +347,7 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 
 		CheckBox *cb = memnew(CheckBox);
 		cb->set_text(text_split[0]);
-		cb->set_clip_text(true);
+		cb->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
 		cb->set_meta("_value", current_val);
 		cb->connect("pressed", callable_mp(this, &EditorPropertySizeFlags::_flag_toggled));
 		add_focusable(cb);
@@ -389,7 +389,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 	add_child(vb);
 
 	flag_presets = memnew(OptionButton);
-	flag_presets->set_clip_text(true);
+	flag_presets->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
 	flag_presets->set_flat(true);
 	vb->add_child(flag_presets);
 	add_focusable(flag_presets);
@@ -402,6 +402,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 
 	flag_expand = memnew(CheckBox);
 	flag_expand->set_text(TTR("Expand"));
+	flag_expand->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
 	vb->add_child(flag_expand);
 	add_focusable(flag_expand);
 	flag_expand->connect("pressed", callable_mp(this, &EditorPropertySizeFlags::_expand_toggled));

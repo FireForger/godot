@@ -310,7 +310,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 
 	option_button = memnew(OptionButton);
 	option_button->set_h_size_flags(SIZE_EXPAND_FILL);
-	option_button->set_clip_text(true);
+	option_button->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
 	option_button->set_flat(true);
 	default_layout->add_child(option_button);
 	option_button->connect("item_selected", callable_mp(this, &EditorPropertyTextEnum::_option_selected));
@@ -397,7 +397,6 @@ EditorPropertyLocale::EditorPropertyLocale() {
 	locale->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	locale_edit = memnew(Button);
-	locale_edit->set_clip_text(true);
 	locale_hb->add_child(locale_edit);
 	add_focusable(locale);
 	dialog = nullptr;
@@ -535,7 +534,7 @@ void EditorPropertyClassName::_bind_methods() {
 
 EditorPropertyClassName::EditorPropertyClassName() {
 	property = memnew(Button);
-	property->set_clip_text(true);
+	property->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
 	add_child(property);
 	add_focusable(property);
 	property->set_text(selected_type);
@@ -641,7 +640,7 @@ void EditorPropertyMember::_bind_methods() {
 EditorPropertyMember::EditorPropertyMember() {
 	selector = nullptr;
 	property = memnew(Button);
-	property->set_clip_text(true);
+	property->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
 	add_child(property);
 	add_focusable(property);
 	property->connect("pressed", callable_mp(this, &EditorPropertyMember::_property_select));
@@ -711,7 +710,7 @@ void EditorPropertyEnum::setup(const Vector<String> &p_options) {
 }
 
 void EditorPropertyEnum::set_option_button_clip(bool p_enable) {
-	options->set_clip_text(p_enable);
+	options->set_text_overrun_behavior(p_enable ? TextParagraph::OVERRUN_TRIM_ELLIPSIS : TextParagraph::OVERRUN_NO_TRIMMING);
 }
 
 void EditorPropertyEnum::_bind_methods() {
@@ -719,7 +718,7 @@ void EditorPropertyEnum::_bind_methods() {
 
 EditorPropertyEnum::EditorPropertyEnum() {
 	options = memnew(OptionButton);
-	options->set_clip_text(true);
+	options->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
 	options->set_flat(true);
 	add_child(options);
 	add_focusable(options);
@@ -763,7 +762,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 		if (!option.is_empty()) {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_text(option);
-			cb->set_clip_text(true);
+			cb->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
 			cb->connect("pressed", callable_mp(this, &EditorPropertyFlags::_flag_toggled), varray(i));
 			add_focusable(cb);
 			vbox->add_child(cb);
