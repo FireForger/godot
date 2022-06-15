@@ -2612,19 +2612,14 @@ ProjectManager::ProjectManager() {
 		hb->add_child(sort_label);
 
 		filter_option = memnew(OptionButton);
-		filter_option->set_clip_text(true);
-		filter_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		filter_option->set_text_overrun_behavior(TextParagraph::OVERRUN_TRIM_ELLIPSIS);
+		filter_option->set_custom_minimum_size(Size2(150, 0));
 		filter_option->connect("item_selected", callable_mp(this, &ProjectManager::_on_order_option_changed));
 		hb->add_child(filter_option);
 
-		Vector<String> sort_filter_titles;
-		sort_filter_titles.push_back(TTR("Last Edited"));
-		sort_filter_titles.push_back(TTR("Name"));
-		sort_filter_titles.push_back(TTR("Path"));
-
-		for (int i = 0; i < sort_filter_titles.size(); i++) {
-			filter_option->add_item(sort_filter_titles[i]);
-		}
+		filter_option->add_item(TTR("Last Edited"));
+		filter_option->add_item(TTR("Name"));
+		filter_option->add_item(TTR("Path"));
 
 		PanelContainer *pc = memnew(PanelContainer);
 		pc->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
