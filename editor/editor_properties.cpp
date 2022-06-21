@@ -302,9 +302,11 @@ void EditorPropertyTextEnum::_notification(int p_what) {
 
 EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	default_layout = memnew(HBoxContainer);
+	default_layout->add_theme_constant_override("separation", 0);
 	add_child(default_layout);
 
 	edit_custom_layout = memnew(HBoxContainer);
+	edit_custom_layout->add_theme_constant_override("separation", 0);
 	edit_custom_layout->hide();
 	add_child(edit_custom_layout);
 
