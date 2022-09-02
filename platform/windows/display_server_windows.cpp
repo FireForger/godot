@@ -2397,7 +2397,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (is_dark_mode_supported()) {
 					BOOL value = is_dark_mode();
 					::DwmSetWindowAttribute(windows[window_id].hWnd, immersive_dark_mode, &value, sizeof(value));
-					SetWindowPos(windows[window_id].hWnd, 0, 0, 0, 0, 0, SWP_DRAWFRAME | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
 				}
 			}
 		} break;
@@ -2405,7 +2404,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (is_dark_mode_supported()) {
 				BOOL value = is_dark_mode();
 				::DwmSetWindowAttribute(windows[window_id].hWnd, immersive_dark_mode, &value, sizeof(value));
-				SetWindowPos(windows[window_id].hWnd, 0, 0, 0, 0, 0, SWP_DRAWFRAME | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
 			}
 		} break;
 		case WM_SYSCOMMAND: // Intercept system commands.
@@ -3116,6 +3114,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				_process_activate_event(window_id, windows[window_id].saved_wparam, windows[window_id].saved_lparam);
 				KillTimer(windows[window_id].hWnd, wParam);
 				windows[window_id].focus_timer_id = 0U;
+			} else if (wParam == windows[window_id].redraw_frame_timer_id) {
+				BOOL value = is_dark_mode();
+				::DwmSetWindowAttribute(windows[window_id].hWnd, immersive_dark_mode, &value, sizeof(value));
+				RedrawWindow(windows[window_id].hWnd, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
+
+				KillTimer(windows[window_id].hWnd, wParam);
+				windows[window_id].redraw_frame_timer_id = 0U;
+
+				WARN_PRINT("Redraw frame timer reached");
 			}
 		} break;
 		case WM_SYSKEYDOWN:
@@ -3519,9 +3526,9 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		}
 
 		if (is_dark_mode_supported()) {
-			BOOL value = is_dark_mode();
-			::DwmSetWindowAttribute(wd.hWnd, immersive_dark_mode, &value, sizeof(value));
-			SetWindowPos(wd.hWnd, 0, 0, 0, 0, 0, SWP_DRAWFRAME | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
+			// Redraw the window frame right after creation to fix a broken title
+			// bar bug on Windows 10.
+			wd.redraw_frame_timer_id = SetTimer(wd.hWnd, 3, 1000U, (TIMERPROC) nullptr);
 		}
 
 #ifdef VULKAN_ENABLED
