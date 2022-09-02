@@ -39,10 +39,6 @@
 #include <avrt.h>
 #include <dwmapi.h>
 
-#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
-#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
-#endif
-
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
@@ -2400,14 +2396,16 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (lParam && CompareStringOrdinal(reinterpret_cast<LPCWCH>(lParam), -1, L"ImmersiveColorSet", -1, true) == CSTR_EQUAL) {
 				if (is_dark_mode_supported()) {
 					BOOL value = is_dark_mode();
-					::DwmSetWindowAttribute(windows[window_id].hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+					::DwmSetWindowAttribute(windows[window_id].hWnd, immersive_dark_mode, &value, sizeof(value));
+					SetWindowPos(windows[window_id].hWnd, 0, 0, 0, 0, 0, SWP_DRAWFRAME | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
 				}
 			}
 		} break;
 		case WM_THEMECHANGED: {
 			if (is_dark_mode_supported()) {
 				BOOL value = is_dark_mode();
-				::DwmSetWindowAttribute(windows[window_id].hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+				::DwmSetWindowAttribute(windows[window_id].hWnd, immersive_dark_mode, &value, sizeof(value));
+				SetWindowPos(windows[window_id].hWnd, 0, 0, 0, 0, 0, SWP_DRAWFRAME | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
 			}
 		} break;
 		case WM_SYSCOMMAND: // Intercept system commands.
@@ -3522,7 +3520,8 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 		if (is_dark_mode_supported()) {
 			BOOL value = is_dark_mode();
-			::DwmSetWindowAttribute(wd.hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+			::DwmSetWindowAttribute(wd.hWnd, immersive_dark_mode, &value, sizeof(value));
+			SetWindowPos(wd.hWnd, 0, 0, 0, 0, 0, SWP_DRAWFRAME | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
 		}
 
 #ifdef VULKAN_ENABLED
@@ -3612,6 +3611,7 @@ WTPacketPtr DisplayServerWindows::wintab_WTPacket = nullptr;
 WTEnablePtr DisplayServerWindows::wintab_WTEnable = nullptr;
 
 // UXTheme API.
+int DisplayServerWindows::immersive_dark_mode = 20;
 bool DisplayServerWindows::ux_theme_available = false;
 IsDarkModeAllowedForAppPtr DisplayServerWindows::IsDarkModeAllowedForApp = nullptr;
 ShouldAppsUseDarkModePtr DisplayServerWindows::ShouldAppsUseDarkMode = nullptr;
@@ -3704,7 +3704,21 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
-	// Load UXTheme
+	// Load Windows version info.
+	OSVERSIONINFOW os_ver;
+	ZeroMemory(&os_ver, sizeof(OSVERSIONINFOW));
+	os_ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
+
+	HMODULE nt_lib = LoadLibraryW(L"ntdll.dll");
+	if (nt_lib) {
+		RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr)GetProcAddress(nt_lib, "RtlGetVersion");
+		if (RtlGetVersion) {
+			RtlGetVersion(&os_ver);
+		}
+		FreeLibrary(nt_lib);
+	}
+
+	// Load UXTheme.
 	HMODULE ux_theme_lib = LoadLibraryW(L"uxtheme.dll");
 	if (ux_theme_lib) {
 		IsDarkModeAllowedForApp = (IsDarkModeAllowedForAppPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(136));
@@ -3714,6 +3728,13 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		GetImmersiveUserColorSetPreference = (GetImmersiveUserColorSetPreferencePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(98));
 
 		ux_theme_available = IsDarkModeAllowedForApp && ShouldAppsUseDarkMode && GetImmersiveColorFromColorSetEx && GetImmersiveColorTypeFromName && GetImmersiveUserColorSetPreference;
+		if (os_ver.dwBuildNumber < 17763) {
+			ux_theme_available = false;
+		} else if (os_ver.dwBuildNumber < 18985) {
+			immersive_dark_mode = 19;
+		} else {
+			immersive_dark_mode = 20;
+		}
 	}
 
 	// Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
