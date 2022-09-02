@@ -573,6 +573,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 void EditorAssetLibrary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -587,6 +588,20 @@ void EditorAssetLibrary::_notification(int p_what) {
 			library_scroll_bg->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 			downloads_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 			error_label->add_theme_color_override("color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+
+			// Update paginator button icons.
+			if (first_page_button) {
+				first_page_button->set_icon(get_theme_icon(SNAME("PageFirst"), SNAME("EditorIcons")));
+			}
+			if (prev_page_button) {
+				prev_page_button->set_icon(get_theme_icon(SNAME("PagePrevious"), SNAME("EditorIcons")));
+			}
+			if (next_page_button) {
+				next_page_button->set_icon(get_theme_icon(SNAME("PageNext"), SNAME("EditorIcons")));
+			}
+			if (last_page_button) {
+				last_page_button->set_icon(get_theme_icon(SNAME("PageLast"), SNAME("EditorIcons")));
+			}
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -985,6 +1000,7 @@ void EditorAssetLibrary::_request_current_config() {
 
 HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items) {
 	HBoxContainer *hbc = memnew(HBoxContainer);
+	hbc->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 
 	if (p_page_count < 2) {
 		return hbc;
@@ -1000,28 +1016,25 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		to = p_page_count;
 	}
 
-	hbc->add_spacer();
 	hbc->add_theme_constant_override("separation", 5 * EDSCALE);
 
-	Button *first = memnew(Button);
-	first->set_text(TTR("First", "Pagination"));
+	first_page_button = memnew(Button);
 	if (p_page != 0) {
-		first->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(0));
+		first_page_button->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(0));
 	} else {
-		first->set_disabled(true);
-		first->set_focus_mode(Control::FOCUS_NONE);
+		first_page_button->set_disabled(true);
+		first_page_button->set_focus_mode(Control::FOCUS_NONE);
 	}
-	hbc->add_child(first);
+	hbc->add_child(first_page_button);
 
-	Button *prev = memnew(Button);
-	prev->set_text(TTR("Previous", "Pagination"));
+	prev_page_button = memnew(Button);
 	if (p_page > 0) {
-		prev->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(p_page - 1));
+		prev_page_button->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(p_page - 1));
 	} else {
-		prev->set_disabled(true);
-		prev->set_focus_mode(Control::FOCUS_NONE);
+		prev_page_button->set_disabled(true);
+		prev_page_button->set_focus_mode(Control::FOCUS_NONE);
 	}
-	hbc->add_child(prev);
+	hbc->add_child(prev_page_button);
 	hbc->add_child(memnew(VSeparator));
 
 	for (int i = from; i < to; i++) {
@@ -1043,28 +1056,24 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		}
 	}
 
-	Button *next = memnew(Button);
-	next->set_text(TTR("Next", "Pagination"));
+	next_page_button = memnew(Button);
 	if (p_page < p_page_count - 1) {
-		next->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(p_page + 1));
+		next_page_button->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(p_page + 1));
 	} else {
-		next->set_disabled(true);
-		next->set_focus_mode(Control::FOCUS_NONE);
+		next_page_button->set_disabled(true);
+		next_page_button->set_focus_mode(Control::FOCUS_NONE);
 	}
 	hbc->add_child(memnew(VSeparator));
-	hbc->add_child(next);
+	hbc->add_child(next_page_button);
 
-	Button *last = memnew(Button);
-	last->set_text(TTR("Last", "Pagination"));
+	last_page_button = memnew(Button);
 	if (p_page != p_page_count - 1) {
-		last->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(p_page_count - 1));
+		last_page_button->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search).bind(p_page_count - 1));
 	} else {
-		last->set_disabled(true);
-		last->set_focus_mode(Control::FOCUS_NONE);
+		last_page_button->set_disabled(true);
+		last_page_button->set_focus_mode(Control::FOCUS_NONE);
 	}
-	hbc->add_child(last);
-
-	hbc->add_spacer();
+	hbc->add_child(last_page_button);
 
 	return hbc;
 }

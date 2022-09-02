@@ -200,6 +200,12 @@ class EditorAssetLibrary : public PanelContainer {
 	Label *error_label = nullptr;
 	MenuButton *support = nullptr;
 
+	// Paginator buttons.
+	Button *first_page_button = nullptr;
+	Button *prev_page_button = nullptr;
+	Button *next_page_button = nullptr;
+	Button *last_page_button = nullptr;
+
 	HBoxContainer *contents = nullptr;
 
 	HBoxContainer *asset_top_page = nullptr;
